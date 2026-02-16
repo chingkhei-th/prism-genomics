@@ -1,0 +1,27 @@
+rsid,chr,pos,effect_allele,other_allele,beta,p_value,trait
+rs10923931,1,120517959,T,G,0.14,2e-13,type 2 diabetes
+rs340874,1,214159256,C,T,0.07,3e-09,type 2 diabetes
+rs2820436,1,219750717,A,G,0.05,1e-08,type 2 diabetes
+rs12129861,1,152435894,T,C,0.06,4e-09,type 2 diabetes
+rs2943640,1,227556788,C,A,0.09,5e-10,type 2 diabetes
+rs17114036,1,56962821,A,G,0.19,1e-12,coronary artery disease
+rs11206510,1,55496039,T,C,0.15,2e-14,coronary artery disease
+rs4845625,1,154426264,T,C,0.06,3e-08,coronary artery disease
+rs602633,1,109821511,G,T,0.12,6e-18,coronary artery disease
+rs12740374,1,109818530,G,T,0.17,1e-26,coronary artery disease
+rs880315,1,10796866,C,T,0.35,2e-10,hypertension
+rs2932538,1,113218117,G,A,0.42,3e-15,hypertension
+rs2004776,1,204175254,T,G,0.3,8e-09,hypertension
+rs17367504,1,11862778,G,A,0.65,7e-23,hypertension
+rs3737002,1,47648125,T,C,0.28,5e-09,hypertension
+rs11249433,1,121280613,A,G,0.12,3e-15,breast cancer
+rs12048493,1,202175916,C,T,0.05,2e-08,breast cancer
+rs4951011,1,10566215,A,G,0.07,1e-08,breast cancer
+rs616488,1,10566882,A,G,0.06,5e-09,breast cancer
+rs6656401,1,207692049,A,G,0.18,4e-16,alzheimer disease
+rs3818361,1,207784968,T,C,0.15,2e-12,alzheimer disease
+rs543874,1,177889480,G,A,0.18,3e-20,body mass index
+rs12566985,1,74764232,A,G,0.06,2e-08,body mass index
+rs977747,1,47684677,T,G,0.04,1e-08,body mass index
+rs1625579,1,98515539,T,G,0.11,1e-10,schizophrenia
+rs4648845,1,243488113,A,G,0.08,5e-09,schizophrenia
