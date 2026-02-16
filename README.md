@@ -126,6 +126,65 @@ uv run python scripts/retrain_model.py --learning-rate 0.01 --n-estimators 500
 
 ---
 
+## 🌐 API Server
+
+### Start the API
+
+```bash
+uv run python -m src.api.server
+# Server starts at http://localhost:8000
+```
+
+### Endpoints
+
+#### `POST /api/v1/analyze` — Upload VCF for risk assessment
+
+```bash
+curl -X POST http://localhost:8000/api/v1/analyze \
+  -F "file=@path/to/sample.vcf"
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "risk_assessment": {
+    "prs_raw": 0.37,
+    "z_score": -2.719,
+    "percentile": 0.3,
+    "risk_category": "Low"
+  },
+  "ml_prediction": {
+    "disease_risk_label": "Normal",
+    "disease_probability": 0.0761
+  },
+  "snp_analysis": {
+    "total_gwas_snps": 16,
+    "matched_in_upload": 2,
+    "top_contributing_snps": [
+      { "rsid": "rs17367504", "genotype": 1, "beta": 0.65, "contribution": 0.65, "trait": "hypertension" }
+    ]
+  },
+  "processing_time_seconds": 0.45
+}
+```
+
+#### `GET /api/v1/health` — Health check
+
+```bash
+curl http://localhost:8000/api/v1/health
+```
+
+#### `GET /api/v1/model-info` — Model + SNP metadata
+
+```bash
+curl http://localhost:8000/api/v1/model-info
+```
+
+Interactive API docs are auto-generated at **http://localhost:8000/docs** (Swagger UI).
+
+---
+
 ## 📊 Pipeline Output Summary
 
 After a successful run, the following artifacts are produced:
