@@ -27,7 +27,6 @@ PRISM-Genomics/
 │   ├── gwas/                      # Curated GWAS SNP effect sizes
 │   ├── processed/                 # Genotype matrix, PRS scores, labeled dataset
 │   └── models/                    # Population stats, trained model, metrics
-├── docs/                          # SRS, architecture, ML pipeline documentation
 ├── src/
 │   ├── config.py                  # Centralized settings (env-backed)
 │   ├── data_preparation/
@@ -37,11 +36,13 @@ PRISM-Genomics/
 │   ├── prs_engine/
 │   │   ├── calculator.py          # PRS = Σ(β × genotype)
 │   │   └── normalizer.py          # Z-score, percentile, risk categories
-│   └── ml/
-│       ├── label_simulator.py     # Liability threshold disease labels
-│       └── trainer.py             # XGBoost training + evaluation
+│   ├── ml/
+│   │   ├── label_simulator.py     # Liability threshold disease labels
+│   │   └── trainer.py             # XGBoost training + evaluation
+│   └── api/
+│       ├── inference.py           # VCF parsing, PRS computation, ML prediction
+│       └── server.py              # FastAPI server with analysis endpoints
 ├── scripts/
-│   ├── extract_patient.py         # Extract single patient from population VCF
 │   └── retrain_model.py           # Standalone model retraining script
 ├── .env.example                   # Environment variables template
 ├── pyproject.toml                 # Dependencies and project config
