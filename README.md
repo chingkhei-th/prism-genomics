@@ -1,283 +1,206 @@
-# 🧬 PRISM-Genomics
-
-**Polygenic Risk Intelligence for Secure Medicine**
-
-AI-driven polygenic risk modeling using population-scale genomic data and GWAS-derived effect sizes. Computes scientifically grounded, interpretable genetic risk scores and trains ML models for disease risk prediction.
-
----
+# Documentation
 
-## ✨ Features
-
-- **PRS Computation** — `PRS = Σ(β × genotype)` using GWAS-derived effect sizes
-- **Population Normalization** — Z-score and percentile ranking against 1000 Genomes reference
-- **Risk Stratification** — Low / Moderate / High categories based on percentile thresholds
-- **ML Risk Prediction** — XGBoost classifier trained on genotype features + PRS
-- **Disease Label Simulation** — Liability threshold model for realistic label generation
-- **Configurable Pipeline** — All parameters tunable via `.env` file
-- **Standalone Retraining** — Retrain the ML model in seconds without re-processing VCF
+**PROJECT TITLE : *PRISM Gemonics*** *: Decentralized AI-Powered Genomic Data Ownership & Risk Intelligence Platform*
 
----
+**PROJECT OVERVIEW
+Team Name:** Mangzing 
+**Team Members:**
+1. Khumbongmayum Yaiphaba Singh – Blockchain Developer & UI/UX Designer
+2. Chingkheinganba Thoudam – AI/ML Engineer
+3. Thongam Gripson Singh – Backend and Frontend
+Link the Concept Video: [https://youtu.be/a8waELYlxZ0](https://youtu.be/a8waELYlxZ0)
 
-## 📁 Project Structure
-
-```
-PRISM-Genomics/
-├── data/
-│   ├── raw/                       # 1000 Genomes VCF input
-│   ├── gwas/                      # Curated GWAS SNP effect sizes
-│   ├── processed/                 # Genotype matrix, PRS scores, labeled dataset
-│   └── models/                    # Population stats, trained model, metrics
-├── src/
-│   ├── config.py                  # Centralized settings (env-backed)
-│   ├── data_preparation/
-│   │   ├── gwas_fetcher.py        # GWAS SNP curation (26 SNPs, 7 traits)
-│   │   ├── vcf_processor.py       # VCF streaming, filtering, genotype encoding
-│   │   └── prepare_dataset.py     # Full pipeline orchestrator
-│   ├── prs_engine/
-│   │   ├── calculator.py          # PRS = Σ(β × genotype)
-│   │   └── normalizer.py          # Z-score, percentile, risk categories
-│   ├── ml/
-│   │   ├── label_simulator.py     # Liability threshold disease labels
-│   │   └── trainer.py             # XGBoost training + evaluation
-│   └── api/
-│       ├── inference.py           # VCF parsing, PRS computation, ML prediction
-│       └── server.py              # FastAPI server with analysis endpoints
-├── scripts/
-│   └── retrain_model.py           # Standalone model retraining script
-├── .env.example                   # Environment variables template
-├── pyproject.toml                 # Dependencies and project config
-└── README.md
-```
+**THE PROBLEM LANDSCAPE**
 
----
+**Problem Statement:** Genomic data is one of the most sensitive categories of personal data. However, current healthcare systems:
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Python** ≥ 3.12
-- **[uv](https://docs.astral.sh/uv/)** — Python package manager
-
-### 1. Clone and Setup
-
-```bash
-git clone <repo-url>
-cd PRISM-Genomics
-cp .env.example .env
-uv sync
-```
-
-### 2. Download 1000 Genomes Data
-
-Download the chromosome 1 VCF from 1000 Genomes Phase 3:
-
-```bash
-wget -P data/raw/ ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
-```
-
-### 3. Run the Full Pipeline
-
-```bash
-uv run python -m src.data_preparation.prepare_dataset
-```
-
-This runs all 6 steps end-to-end (~14 minutes):
-
-| Step | Description | Output |
-|------|------------|--------|
-| 1 | Fetch GWAS SNPs | `data/gwas/gwas_snps_chr1.csv` |
-| 2 | Process VCF → Genotype Matrix | `data/processed/genotype_matrix.parquet` |
-| 3 | Compute PRS | Population mean/std for normalization |
-| 4 | Normalize & Categorize | `data/processed/prs_scores.csv` |
-| 5 | Simulate Disease Labels | `data/processed/labeled_dataset.csv` |
-| 6 | Train XGBoost Model | `data/models/risk_model.joblib` |
-
----
-
-## 🔁 Retraining the Model
-
-The standalone retrain script skips VCF processing and retrains in seconds:
-
-```bash
-# Default settings
-uv run python scripts/retrain_model.py
-
-# Experiment with hyperparameters
-uv run python scripts/retrain_model.py --n-estimators 200 --max-depth 6
-
-# Adjust disease simulation
-uv run python scripts/retrain_model.py --heritability 0.7 --prevalence 0.10
-
-# Lower learning rate for better generalization
-uv run python scripts/retrain_model.py --learning-rate 0.01 --n-estimators 500
-```
-
-### Retraining Options
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--heritability` | 0.5 | Genetic contribution to disease liability (0–1) |
-| `--prevalence` | 0.15 | Simulated disease prevalence |
-| `--n-estimators` | 100 | Number of boosting rounds (trees) |
-| `--max-depth` | 4 | Maximum depth per tree |
-| `--learning-rate` | 0.1 | Step size shrinkage |
-| `--test-size` | 0.2 | Test set fraction |
-| `--seed` | 42 | Random seed for reproducibility |
-| `--no-resimulate-labels` | — | Reuse existing disease labels |
-
----
+- Store genetic reports in centralized databases
+- Offer limited patient control over access
+- Are vulnerable to breaches and data tampering
+- Lack transparent audit mechanisms
 
-## 🌐 API Server
-
-### Start the API
+Patients do not truly “own” their DNA data.
 
-```bash
-uv run python -m src.api.server
-# Server starts at http://localhost:8000
-```
+The core pain point:
 
-### Endpoints
+No secure, patient-controlled, tamper-proof system exists for genomic data sharing with AI-driven preventive insights.
 
-#### `POST /api/v1/analyze` — Upload VCF for risk assessment
+**Target Audience**
 
-```bash
-curl -X POST http://localhost:8000/api/v1/analyze \
-  -F "file=@path/to/sample.vcf"
-```
+- Individuals who have undergone genetic testing
+- Hospitals & diagnostic laboratories
+- Precision medicine researchers
+- Healthcare startups
 
-**Response:**
-```json
-{
-  "status": "success",
-  "risk_assessment": {
-    "prs_raw": 0.37,
-    "z_score": -2.719,
-    "percentile": 0.3,
-    "risk_category": "Low"
-  },
-  "ml_prediction": {
-    "disease_risk_label": "Normal",
-    "disease_probability": 0.0761
-  },
-  "snp_analysis": {
-    "total_gwas_snps": 16,
-    "matched_in_upload": 2,
-    "top_contributing_snps": [
-      { "rsid": "rs17367504", "genotype": 1, "beta": 0.65, "contribution": 0.65, "trait": "hypertension" }
-    ]
-  },
-  "processing_time_seconds": 0.45
-}
-```
+“**Why Now”**
 
-#### `GET /api/v1/health` — Health check
+- Rise of precision medicine
+- Increased healthcare data breaches globally
+- Growing adoption of consumer genomics
+- Expansion of blockchain-based digital identity systems
 
-```bash
-curl http://localhost:8000/api/v1/health
-```
+Current systems cannot ensure:
 
-#### `GET /api/v1/model-info` — Model + SNP metadata
+- Data sovereignty
+- Tamper-proof storage
+- Transparent access control
 
-```bash
-curl http://localhost:8000/api/v1/model-info
-```
+**PROPOSED SOLUTION & USP**
 
-Interactive API docs are auto-generated at **http://localhost:8000/docs** (Swagger UI).
+**Solution Overview**
 
----
+***PRISM Gemonics*** is a decentralized genomic intelligence platform where:
 
-## 📊 Pipeline Output Summary
+1. Files are AES-256 encrypted & BLAKE3 hashing ensures integrity
+2. Encrypted files are stored on IPFS & Hash fingerprints are stored on blockchain
+3. AI predicts disease and risk using Polygenic Risk Scores
+4. Doctors request access via smart contracts
+5. Patients approve/reject access
+6. All actions are logged immutably
 
-After a successful run, the following artifacts are produced:
+**Unique Selling Proposition (USP)**
 
-| File | Description |
-|------|-------------|
-| `data/gwas/gwas_snps_chr1.csv` | 26 curated GWAS SNPs across 7 disease traits |
-| `data/processed/genotype_matrix.parquet` | 2504 × 16 encoded genotype matrix |
-| `data/processed/prs_scores.csv` | PRS, z-score, percentile, risk category per sample |
-| `data/processed/labeled_dataset.csv` | PRS + simulated disease labels |
-| `data/models/population_stats.json` | Population mean/std PRS for inference |
-| `data/models/snp_weights.json` | SNP IDs and beta weights used |
-| `data/models/risk_model.joblib` | Trained XGBoost classifier |
-| `data/models/model_metrics.json` | Accuracy, ROC-AUC, feature importance |
+- True patient data ownership
+- Modern cryptographic integrity
+- Zero raw genome stored on-chain
+- AI-powered disease Prediction and Risk
+- Smart contract-based access governance
+- Immutable audit trail
 
----
+*Unlike traditional EHR systems**, PRISM Gemonics** combines predictive intelligence + decentralized security + patient sovereignty.*
 
-## 🧪 How It Works
+**Core Logic**
 
-### Polygenic Risk Score (PRS)
+The system integrates:
 
-```
-PRS = Σ (β_i × genotype_i)
-```
+- AI models for disease risk prediction
+- AES-256 symmetric encryption for file protection & BLAKE3 hashing for fast, tamper-proof integrity & IPFS for decentralized storage
+- Solidity smart contracts for access control
 
-Where `β` is the GWAS effect size and `genotype` is the allele dosage (0, 1, or 2). Individual PRS is normalized against the 1000 Genomes reference population using z-scores and percentiles.
+Biological Logic:
 
-### Risk Categories
+- Extract disease-associated SNPs from VCF
+- Encode genotypes (0,1,2)
+- Apply weighted risk scoring
+- Generate probability output
 
-| Category | Percentile Range |
-|----------|-----------------|
-| **Low** | < 40th percentile |
-| **Moderate** | 40–75th percentile |
-| **High** | > 75th percentile |
+**TECHNICAL ARCHITECTURE & STACK**
 
-### ML Model (XGBoost)
+**System Workflow**
 
-Disease labels are generated using a **liability threshold model**:
+![](Documentation/image1.png)
 
-```
-liability = √h² × PRS_normalized + √(1 - h²) × ε
-```
+**Tech Stack**
 
-Where `h²` is heritability and `ε` is environmental noise ~ N(0,1). An XGBoost classifier is then trained on genotype features + PRS to predict disease risk.
+Frontend : 1. Next.js
 
----
+2. MetaMask Wallet Integration
 
-## ⚙️ Configuration
+Backend / Database: 1. FastAPI
 
-All parameters are configurable via `.env` (see `.env.example`):
+2. PostgreSQL
 
-```env
-# Disease simulation
-HERITABILITY=0.5
-DISEASE_PREVALENCE=0.15
+AI / Specialized Tools: Python, gzip, XGBoost, scipy, scikit-learn, pandas, numpy
 
-# GWAS settings
-GWAS_TRAITS=type 2 diabetes,coronary artery disease,hypertension,breast cancer
-GWAS_P_VALUE_THRESHOLD=5e-8
+Blockchain: Solidity, Hardhat, Ethereum-compatible network
 
-# ML settings
-TEST_SIZE=0.2
-RANDOM_SEED=42
-```
+Storage & Security: IPFS, AES-256 Encryption, BLAKE3 Hashing
 
----
+**Architecture Visualization**
 
-## 🔬 Disease Traits Covered
+![](Documentation/image2.png)
 
-The curated GWAS SNP set includes chr1 variants for:
+**KEY FEATURES & FUNCTIONALITIES**
 
-| Trait | SNPs | Key SNP |
-|-------|------|---------|
-| Type 2 Diabetes | 5 | rs10923931 (β=0.14) |
-| Coronary Artery Disease | 5 | rs12740374 (β=0.17) |
-| Hypertension | 5 | rs17367504 (β=0.65) |
-| Breast Cancer | 4 | rs11249433 (β=0.12) |
-| Alzheimer's Disease | 2 | rs6656401 (β=0.18) |
-| Body Mass Index | 3 | rs543874 (β=0.18) |
-| Schizophrenia | 2 | rs1625579 (β=0.11) |
+Feature 1 (Primary): AI-based genomic disease risk prediction.
 
----
+Feature 2 (UX): 1. Wallet-based authentication
 
-## ⚠️ Disclaimer
+2. Patient dashboard with risk visualization
 
-- **Not intended for clinical use** or medical diagnosis
-- **For research and educational purposes only**
-- Genetic counseling recommended before interpretation
-- Results are based on statistical risk modeling, not confirmed disease prediction
+Feature 3 (Reliability & Security): 1. AES-256 encrypted genomic storage &BLAKE3
 
----
+2. Immutable blockchain audit logs
 
-## 📄 License
+3. Temporary permission-based decryption keys
 
-This project is for hackathon and educational purposes.
+**IMPLEMENTATION ROADMAP**
+
+**Phase 1:**
+
+Focus: 1. Problem validation
+
+2. Architectural design
+
+3. Smart contract drafting
+
+4. AI prototype (basic model)
+
+Deliverables: 1. Concept video
+
+2. Documentation
+
+3. Initial Prototype
+
+**Phase 2:**
+
+Focus: 1. Full encryption integration
+
+2. BLAKE3 hashing implementation & IPFS deployment
+
+3. AI Model Refining & UI/UX refinement
+
+4. Final demo video
+
+Deliverables: 1. Working prototype
+
+2. 2-minute demo video
+
+**IMPACT & SUSTAINABILITY**
+
+Social & Economic Impact
+
+- Empowers individuals with genomic ownership & Promotes preventive healthcare
+- Reduces fraud and tampering & Encourages transparent research collaboration
+
+Scalability: The architecture can expand to:
+
+- Electronic Health Records (EHR)
+- Medical imaging storage
+- Clinical trial management
+- Insurance claim validation
+- Biomedical research datasets
+
+Designed for distributed large-scale genomic storage.
+
+**Risk & Mitigation**
+
+Major Risk: AI prediction bias due to limited genomic datasets.
+
+Mitigation:
+
+- Use diverse genomic datasets ()
+- Regular model retraining
+- Transparency in risk score explanation
+- Human-in-the-loop clinical review
+
+Genomics & Genetic Databases & AI/ ML Technology Documentation
+
+1. NCBI SNP Database (dbSNP) – [https://www.ncbi.nlm.nih.gov/snp/](https://www.ncbi.nlm.nih.gov/snp/)
+2. GWAS Catalog – [https://www.ebi.ac.uk/gwas/](https://www.ebi.ac.uk/gwas/)
+3. 1000 Genomes Project – [https://www.internationalgenome.org/](https://www.internationalgenome.org/)
+4. XGBoost - [https://arxiv.org/abs/1603.02754](https://arxiv.org/abs/1603.02754)
+5. VCF Processing - https://academic.oup.com/bioinformatics/article/27/15/2156/402296
+6. Python Software Foundation - https://www.python.org/
+
+Blockchain & Cryptography Documentation
+
+1. Ethereum Solidity Documentation – [https://docs.soliditylang.org/](https://docs.soliditylang.org/)
+2. IPFS Documentation – [https://docs.ipfs.io/](https://docs.ipfs.io/)
+3. BLAKE3 Official Specification – https://github.com/BLAKE3/BLAKE3
+
+Research Papers on Polygenic Risk Scores
+
+1. Polygenic Risk Scores: Genomes to Risk Prediction – https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10681370/
+2. Genome-wide association studies, Polygenic Risk Scores and Mendelian Randomisation – https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12013552/
+3. Polygenic Risk Score Knowledge Base (PRSKB) – https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9438378/
