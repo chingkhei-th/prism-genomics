@@ -1,21 +1,31 @@
 "use client";
-import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { UserCog, Activity, History } from "lucide-react";
+import { useAuth } from "@/providers/AuthProvider";
 import { RequestAccessForm } from "@/components/doctor/RequestAccessForm";
 import { ApprovedPatients } from "@/components/doctor/ApprovedPatients";
 
 export default function DoctorDashboard() {
-  const { address } = useAccount();
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
 
-  if (!address) {
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login");
+    }
+  }, [isLoading, user, router]);
+
+  if (isLoading) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-3xl font-bold mb-4">Connect Wallet Required</h2>
-        <p className="text-gray-400">
-          Please connect your MetaMask wallet to access the Provider Portal.
-        </p>
+      <div className="min-h-[80vh] flex items-center justify-center animate-pulse text-gray-400">
+        Loading...
       </div>
     );
+  }
+
+  if (!user) {
+    return null; // Redirecting...
   }
 
   return (
@@ -36,8 +46,8 @@ export default function DoctorDashboard() {
             <Activity className="w-6 h-6 text-blue-400" /> Request Access
           </h2>
           <p className="text-gray-500 mb-8 text-sm">
-            Enter a patient's Ethereum wallet address to issue an on-chain data
-            request.
+            Enter a patient&apos;s email address to request access to their
+            genomic data.
           </p>
           <RequestAccessForm />
         </section>
@@ -47,8 +57,8 @@ export default function DoctorDashboard() {
             <History className="w-6 h-6 text-emerald-400" /> Approved Patients
           </h2>
           <p className="text-gray-500 mb-8 text-sm">
-            Patients who have explicitly authorized you to decrypt and view
-            their VCF records.
+            Patients who have authorized you to decrypt and view their VCF
+            records.
           </p>
           <ApprovedPatients />
         </section>

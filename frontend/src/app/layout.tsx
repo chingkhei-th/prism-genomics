@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Web3Provider } from "@/providers/Web3Provider";
+import { AuthProvider } from "@/providers/AuthProvider";
 import { Navbar } from "@/components/layout/Navbar";
 import { Toaster } from "sonner";
 
@@ -21,11 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <Web3Provider>
+        <AuthProvider>
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Toaster richColors position="bottom-right" />
-        </Web3Provider>
+        </AuthProvider>
       </body>
     </html>
   );

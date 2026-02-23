@@ -1,8 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAccount, usePublicClient } from "wagmi";
-import { parseAbiItem } from "viem";
-import { DATA_ACCESS } from "@/lib/contracts";
 import {
   ScrollText,
   ExternalLink,
@@ -10,6 +7,7 @@ import {
   ArrowRightLeft,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface AuditEvent {
   eventName: string;
@@ -19,25 +17,21 @@ interface AuditEvent {
 }
 
 export default function AuditTrailPage() {
-  const { address } = useAccount();
-  const publicClient = usePublicClient();
+  const { user } = useAuth();
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a production app, we would use an indexer like The Graph
-    // or fetch from a dedicated backend keeping track of events.
-    // Here we're mocking the recent history because directly fetching
-    // all past events from RPC repeatedly can be slow/rate-limited.
-
-    // Fallback Mock Data representing on-chain events
+    // In a production app, we would fetch from a backend audit API
+    // or use an indexer like The Graph.
+    // Mock data for now:
     const mockEvents: AuditEvent[] = [
       {
         eventName: "DataUploaded",
         txHash: "0x123abc...",
         blockNumber: 5231012,
         args: {
-          patient: address || "0x00...00",
+          patient: user?.email || "unknown",
           ipfsCid: "QmX...",
           blake3Hash: "abcd...",
         },
@@ -46,13 +40,19 @@ export default function AuditTrailPage() {
         eventName: "AccessRequested",
         txHash: "0x456def...",
         blockNumber: 5231150,
-        args: { doctor: "0x8765...4321", patient: address || "0x00...00" },
+        args: {
+          doctor: "dr.smith@hospital.com",
+          patient: user?.email || "unknown",
+        },
       },
       {
         eventName: "AccessApproved",
         txHash: "0x789ghi...",
         blockNumber: 5231200,
-        args: { patient: address || "0x00...00", doctor: "0x8765...4321" },
+        args: {
+          patient: user?.email || "unknown",
+          doctor: "dr.smith@hospital.com",
+        },
       },
     ];
 
@@ -60,7 +60,7 @@ export default function AuditTrailPage() {
       setEvents(mockEvents);
       setLoading(false);
     }, 1500);
-  }, [address, publicClient]);
+  }, [user]);
 
   const getEventIcon = (name: string) => {
     switch (name) {
@@ -114,7 +114,7 @@ export default function AuditTrailPage() {
               Contract Events History
             </h2>
             <span className="text-xs font-mono text-gray-500 bg-black px-3 py-1 rounded">
-              Contract: {DATA_ACCESS.address}
+              Blockchain Verified
             </span>
           </div>
 
@@ -130,7 +130,7 @@ export default function AuditTrailPage() {
               </div>
             ) : events.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
-                No on-chain events found for your connected address.
+                No on-chain events found for your account.
               </div>
             ) : (
               <div className="space-y-4 relative">

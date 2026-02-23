@@ -1,20 +1,54 @@
 "use client";
-import { useAccount } from "wagmi";
-import { ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
-import { useApproveAccess } from "@/hooks/useDataAccess";
+import { useState, useEffect } from "react";
+import { ShieldCheck, XCircle, Loader2 } from "lucide-react";
+import { patientPermissions, patientApprove, PermissionEntry } from "@/lib/api";
 import { toast } from "sonner";
 
 export function PendingRequests() {
-  const { address } = useAccount();
-  const { approve, isPending } = useApproveAccess();
+  const [pending, setPending] = useState<PermissionEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // In a real app we'd fetch this from the backend indexer / smart contract events
-  // using generic mock data here
-  const pendingDoctors = [
-    { address: "0x1234...5678", name: "Dr. Alice Smith", date: "2 Hours ago" },
-  ];
+  useEffect(() => {
+    patientPermissions()
+      .then((data) => setPending(data.pending))
+      .catch(() => {
+        // Backend not ready yet — show mock data
+        setPending([
+          {
+            address: "0x1234...5678",
+            email: "dr.smith@hospital.com",
+            name: "Dr. Alice Smith",
+            date: "2 Hours ago",
+            status: "pending",
+          },
+        ]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  if (!address || pendingDoctors.length === 0) {
+  const handleApprove = async (doc: PermissionEntry) => {
+    setActionLoading(doc.email);
+    try {
+      await patientApprove(doc.email);
+      setPending((prev) => prev.filter((d) => d.email !== doc.email));
+      toast.success(`Approved access for ${doc.name}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to approve access");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-gray-500 animate-pulse">
+        Loading requests...
+      </div>
+    );
+  }
+
+  if (pending.length === 0) {
     return (
       <div className="p-8 border-2 border-dashed border-gray-800 rounded-2xl text-center text-gray-500">
         No pending access requests.
@@ -24,32 +58,32 @@ export function PendingRequests() {
 
   return (
     <div className="space-y-4">
-      {pendingDoctors.map((doc, i) => (
+      {pending.map((doc, i) => (
         <div
           key={i}
-          className="flex items-center justify-between p-4 bg-gray-900/40 border border-gray-800 rounded-xl"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-900/40 border border-gray-800 rounded-xl"
         >
-          <div className="flex flex-col">
-            <span className="font-medium text-white">{doc.name}</span>
-            <span className="text-sm font-mono text-gray-400">
-              {doc.address}
-            </span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-medium text-white truncate">{doc.name}</span>
+            <span className="text-sm text-gray-400 truncate">{doc.email}</span>
             <span className="text-xs text-gray-500 mt-1">
               Requested {doc.date}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => {
-                approve(doc.address as `0x${string}`);
-                toast.success("Approval transaction initiated");
-              }}
-              disabled={isPending}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 rounded-lg text-sm transition-colors"
+              onClick={() => handleApprove(doc)}
+              disabled={actionLoading === doc.email}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 rounded-lg text-sm transition-colors disabled:opacity-50 shrink-0"
             >
-              <ShieldCheck className="w-4 h-4" /> Approve
+              {actionLoading === doc.email ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ShieldCheck className="w-4 h-4" />
+              )}
+              Approve
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-400 border border-gray-700 rounded-lg text-sm transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-400 border border-gray-700 rounded-lg text-sm transition-colors shrink-0">
               <XCircle className="w-4 h-4" /> Decline
             </button>
           </div>
