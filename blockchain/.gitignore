@@ -1,6 +1,7 @@
 # Node modules
 /node_modules
 .DS_Store
+
 # Compilation output
 /dist
 
@@ -10,7 +11,7 @@
 # Hardhat Build Artifacts
 /artifacts
 
-# Hardhat compilation (v2) support directory
+# Hardhat compilation cache
 /cache
 
 # Typechain output
@@ -18,3 +19,12 @@
 
 # Hardhat coverage reports
 /coverage
+
+# Hardhat Ignition deployment history
+/ignition/deployments
+
+# Environment variables (NEVER commit)
+.env
+
+# Hardhat keystore
+.hardhat-keystore/

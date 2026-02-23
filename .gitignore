@@ -1,0 +1,47 @@
+# ===============================
+# PRISM Genomics — Root .gitignore
+# ===============================
+
+# Environment variables (secrets!)
+.env
+.env.local
+.env.production
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Encrypted data (never commit patient data)
+*.enc
+*.vcf
+*.vcf.gz
+
+# Keystore (contains encryption keys)
+.keystore.json
+

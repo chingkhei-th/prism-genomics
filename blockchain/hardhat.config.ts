@@ -1,9 +1,11 @@
+import "dotenv/config";
 import "@nomicfoundation/hardhat-viem";
 import hardhatViemPlugin from "@nomicfoundation/hardhat-viem";
 import hardhatMocha from "@nomicfoundation/hardhat-mocha";
 import hardhatIgnitionViem from "@nomicfoundation/hardhat-ignition-viem";
 import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
-import { configVariable, defineConfig } from "hardhat/config";
+import hardhatKeystore from "@nomicfoundation/hardhat-keystore";
+import { defineConfig } from "hardhat/config";
 
 export default defineConfig({
   plugins: [
@@ -11,6 +13,7 @@ export default defineConfig({
     hardhatMocha,
     hardhatIgnitionViem,
     hardhatNetworkHelpers,
+    hardhatKeystore,
   ],
   solidity: {
     profiles: {
@@ -37,11 +40,18 @@ export default defineConfig({
       type: "edr-simulated",
       chainType: "op",
     },
+    localhost: {
+      type: "http",
+      chainType: "l1",
+      url: "http://127.0.0.1:8545",
+    },
     sepolia: {
       type: "http",
       chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+      url: process.env.SEPOLIA_RPC_URL ?? "",
+      accounts: process.env.PRIVATE_KEY?.match(/^[0-9a-fA-F]{64}$/)
+        ? [process.env.PRIVATE_KEY]
+        : [],
     },
   },
 });
