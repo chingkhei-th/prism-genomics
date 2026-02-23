@@ -1,0 +1,15 @@
+# Encryption module
+
+# Keystore (contains encrypted AES keys — NEVER commit)
+.keystore.json
+
+# Encrypted files
+*.enc
+
+# Genomic data files
+*.vcf
+*.vcf.gz
+
+# Python
+__pycache__/
+*.py[cod]

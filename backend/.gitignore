@@ -17,6 +17,7 @@ data/raw/*.vcf.gz
 data/raw/*.vcf
 data/processed/
 data/models/
+data/gwas/*.csv
 
 # IDE
 .vscode/

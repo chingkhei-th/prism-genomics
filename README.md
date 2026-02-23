@@ -156,6 +156,43 @@ Deliverables: 1. Working prototype
 
 2. 2-minute demo video
 
+**Blockchain & Decentralized Storage Implementation Guide**
+
+This section outlines the action plan and technical specification for the decentralized layer of PRISM Genomics.
+
+**1. Smart Contract Architecture (Solidity)**
+- **Location:** `blockchain/`
+- **Objective:** Build an access control system where patients have absolute sovereignty over their genomic data.
+- **Key Contracts:**
+  - `PatientRegistry.sol`: Registers users and maps their wallet address to their identity.
+  - `DataAccess.sol`: Manages permission requests from doctors/researchers. Includes functions like `requestAccess()`, `approveAccess()`, and `revokeAccess()`.
+- **Audit Logging:** Every access request and approval is emitted as an on-chain event, creating an immutable audit trail.
+- **Tools:** Use **Hardhat** for local compilation, testing, and deployment. Leverage **OpenZeppelin** for secure contract standards.
+
+**2. Encryption & Hashing Flow (Python)**
+- **Location:** `encryption/aes256.py`
+- **Objective:** Secure genomic files before they leave the patient's local environment.
+- **Process:**
+  1. Generate a symmetric AES-256 key.
+  2. Encrypt the raw genomic dataset (VCF format) using AES-256.
+  3. Hash the ENCRYPTED file using the **BLAKE3** algorithm to generate a tamper-proof fingerprint.
+  4. The encryption key is securely shared with authorized doctors via the backend.
+
+**3. IPFS Integration**
+- **Location:** `ipfs/readme.py`
+- **Objective:** Store the encrypted genomic file on a decentralized network to prevent single points of failure.
+- **Process:**
+  1. Use an IPFS pinning service (e.g., Pinata).
+  2. Upload the encrypted file to IPFS.
+  3. Retrieve the Content Identifier (CID).
+  4. Store the IPFS CID + the BLAKE3 hash on the blockchain via the `DataAccess.sol` smart contract.
+
+**4. Actionable Steps**
+- **Step 1:** Initialize the Hardhat project in the `blockchain/` directory (`npx hardhat init`) and draft `DataAccess.sol`.
+- **Step 2:** Write the Python encryption and BLAKE3 hashing logic in `encryption/aes256.py`.
+- **Step 3:** Implement the IPFS upload script in `ipfs/readme.py` (consider renaming to `ipfs_upload.py`).
+- **Step 4:** Integrate these scripts with the FastAPI backend and Next.js frontend to complete the workflow.
+
 **IMPACT & SUSTAINABILITY**
 
 Social & Economic Impact

@@ -1,0 +1,30 @@
+# Node modules
+/node_modules
+.DS_Store
+
+# Compilation output
+/dist
+
+# pnpm deploy output
+/bundle
+
+# Hardhat Build Artifacts
+/artifacts
+
+# Hardhat compilation cache
+/cache
+
+# Typechain output
+/types
+
+# Hardhat coverage reports
+/coverage
+
+# Hardhat Ignition deployment history
+/ignition/deployments
+
+# Environment variables (NEVER commit)
+.env
+
+# Hardhat keystore
+.hardhat-keystore/

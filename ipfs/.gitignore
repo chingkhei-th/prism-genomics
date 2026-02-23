@@ -1,0 +1,12 @@
+# IPFS module
+
+# Pinata API credentials (NEVER commit)
+.env
+
+.DS_Store
+# Downloaded encrypted files
+*.enc
+
+# Python
+__pycache__/
+*.py[cod]
