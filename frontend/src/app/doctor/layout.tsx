@@ -30,5 +30,5 @@ export default function DoctorLayout({
     );
   }
 
-  return <>{children}</>;
+  return <div className="pt-28">{children}</div>;
 }

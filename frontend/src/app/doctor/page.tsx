@@ -23,7 +23,7 @@ export default function DoctorDashboard() {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-2 gap-8 items-start">
         <section className="bg-gray-900/30 border border-gray-800 rounded-2xl p-8">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
             <Activity className="w-6 h-6 text-blue-400" /> Request Access

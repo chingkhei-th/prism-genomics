@@ -33,7 +33,7 @@ export default function PermissionsPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 items-start">
           <section className="bg-gray-900/20 border border-gray-800 rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-6 text-yellow-500 border-b border-gray-800 pb-4">
               <ShieldAlert className="w-5 h-5" />

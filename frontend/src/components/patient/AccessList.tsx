@@ -71,7 +71,14 @@ export function AccessList({
             <span className="font-medium text-white truncate">{doc.name}</span>
             <span className="text-sm text-gray-400 truncate">{doc.email}</span>
             <span className="text-xs text-blue-400/70 mt-1">
-              Approved {doc.date}
+              Approved{" "}
+              {new Date(doc.date).toLocaleString([], {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           </div>
           <button
