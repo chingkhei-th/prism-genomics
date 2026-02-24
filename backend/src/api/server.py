@@ -18,6 +18,7 @@ from fastapi.responses import JSONResponse
 
 from src.api.inference import InferenceEngine
 from src.api.auth import router as auth_router
+from src.api.patient import router as patient_router
 from src.db import connect_db, disconnect_db
 
 logging.basicConfig(
@@ -63,6 +64,9 @@ app = FastAPI(
 
 # Include Authentication Router
 app.include_router(auth_router, prefix="/api/v1")
+
+# Include Patient Router
+app.include_router(patient_router, prefix="/api/v1")
 
 # Enable CORS for frontend access
 app.add_middleware(

@@ -3,18 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Upload, Activity, ShieldCheck, Clock } from "lucide-react";
+import { Upload, Activity, ShieldCheck, Clock, Database } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 
 export default function PatientDashboard() {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login");
-    }
-  }, [isLoading, user, router]);
+  const { user } = useAuth();
 
   // In a real app, this would be fetched from the backend
   const recentActivities = [
@@ -31,14 +24,6 @@ export default function PatientDashboard() {
       status: "View Results",
     },
   ];
-
-  if (isLoading) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center animate-pulse text-gray-400">
-        Loading...
-      </div>
-    );
-  }
 
   if (!user) {
     return null; // Redirecting...
@@ -76,15 +61,15 @@ export default function PatientDashboard() {
         </Link>
 
         <Link
-          href="/patient/results"
-          className="p-6 rounded-2xl bg-purple-900/10 border border-purple-900/30 hover:bg-purple-900/20 hover:border-purple-500/50 transition-all group"
+          href="/patient/files"
+          className="p-6 rounded-2xl bg-cyan-900/10 border border-cyan-900/30 hover:bg-cyan-900/20 hover:border-cyan-500/50 transition-all group"
         >
-          <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Activity className="w-6 h-6 text-purple-400" />
+          <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Database className="w-6 h-6 text-cyan-400" />
           </div>
-          <h3 className="font-semibold text-lg mb-1">Risk Results</h3>
+          <h3 className="font-semibold text-lg mb-1">Data Vault</h3>
           <p className="text-sm text-gray-400">
-            View your Polygenic Risk Scores (PRS).
+            View past uploads and AI risk reports.
           </p>
         </Link>
 
