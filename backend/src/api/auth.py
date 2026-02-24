@@ -11,28 +11,56 @@ from pydantic import BaseModel, EmailStr
 from src.db import db
 from prisma.models import User
 
+
 # --- Configuration ---
 JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key-change-it")
+AES_SECRET_KEY = os.getenv("AES_SECRET_KEY", "change-this-aes-secret-key-now!")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
+
+# Derive a 32-byte AES-256 key from the secret
+AES_KEY = hashlib.sha256(AES_SECRET_KEY.encode()).digest()
 
 # --- Security Setup ---
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/signin")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+# --- AES-256-GCM Password Helpers (using GenomicEncryption) ---
+def _aes256_encrypt_password(password: str) -> str:
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    import secrets
+    aesgcm = AESGCM(AES_KEY)
+    nonce = secrets.token_bytes(12)
+    ciphertext = aesgcm.encrypt(nonce, password.encode(), None)
+    return base64.b64encode(nonce + ciphertext).decode()
+
+def _aes256_decrypt_password(encrypted_b64: str) -> str:
+    """Decrypt an AES-256-GCM encrypted password."""
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    raw = base64.b64decode(encrypted_b64)
+    nonce = raw[:12]
+    ciphertext = raw[12:]
+    aesgcm = AESGCM(AES_KEY)
+    return aesgcm.decrypt(nonce, ciphertext, None).decode()
+
 # --- Helper Functions ---
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    password_hash = hashlib.sha256(plain_password.encode()).digest()
-    password_b64 = base64.b64encode(password_hash)
-    return bcrypt.checkpw(password_b64, hashed_password.encode())
+def verify_password(plain_password: str, stored_value: str) -> bool:
+    """Verify password against stored 'encrypted_pw::bcrypt_hash' value."""
+    if "::" not in stored_value:
+        # Fallback: plain bcrypt comparison
+        return bcrypt.checkpw(plain_password.encode(), stored_value.encode())
+    encrypted_pw_b64, bcrypt_hash = stored_value.split("::", 1)
+    decrypted = _aes256_decrypt_password(encrypted_pw_b64)
+    return bcrypt.checkpw(decrypted.encode(), bcrypt_hash.encode()) and decrypted == plain_password
 
 def get_password_hash(password: str) -> str:
-    password_hash = hashlib.sha256(password.encode()).digest()
-    password_b64 = base64.b64encode(password_hash)
+    """Encrypt password with AES-256-GCM, then bcrypt the plaintext.
+    Stores as 'aes_encrypted_pw::bcrypt_hash'."""
+    encrypted_pw = _aes256_encrypt_password(password)
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password_b64, salt)
-    return hashed.decode()
+    hashed = bcrypt.hashpw(password.encode(), salt)
+    return f"{encrypted_pw}::{hashed.decode()}"
 
 # --- Schemas ---
 class UserSignup(BaseModel):
