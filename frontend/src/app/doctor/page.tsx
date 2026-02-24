@@ -15,7 +15,7 @@ export default function DoctorDashboard() {
     <div className="container mx-auto px-6 py-12">
       <div className="mb-10">
         <h1 className="text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
-          <UserCog className="w-10 h-10 text-blue-500" /> Provider Portal
+          <UserCog className="w-10 h-10 text-brand" /> Provider Portal
         </h1>
         <p className="text-gray-400">
           Request access to patient genomic records and analyze clinical risk
@@ -26,7 +26,7 @@ export default function DoctorDashboard() {
       <div className="grid lg:grid-cols-2 gap-8 items-start">
         <section className="bg-gray-900/30 border border-gray-800 rounded-2xl p-8">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-            <Activity className="w-6 h-6 text-blue-400" /> Request Access
+            <Activity className="w-6 h-6 text-brand" /> Request Access
           </h2>
           <p className="text-gray-500 mb-8 text-sm">
             Enter a patient&apos;s email address to request access to their

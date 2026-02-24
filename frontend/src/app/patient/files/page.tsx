@@ -52,7 +52,7 @@ export default function UploadHistoryPage() {
       </Link>
 
       <div className="mb-10 flex items-center gap-4">
-        <div className="w-14 h-14 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center border border-blue-500/20">
+        <div className="w-14 h-14 bg-brand/10 text-brand rounded-2xl flex items-center justify-center border border-brand/20">
           <Database className="w-7 h-7" />
         </div>
         <div>
@@ -82,7 +82,7 @@ export default function UploadHistoryPage() {
           </p>
           <Link
             href="/patient/upload"
-            className="inline-block px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all"
+            className="inline-block px-8 py-3 rounded-xl bg-brand hover:bg-brand/80 text-black font-bold transition-all"
           >
             Upload VCF File
           </Link>
@@ -150,7 +150,7 @@ export default function UploadHistoryPage() {
                         href={file.ipfsUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                        className="text-brand hover:opacity-80 flex items-center gap-1 transition-all"
                       >
                         {file.ipfsCid.slice(0, 16)}...{file.ipfsCid.slice(-8)}
                         <ExternalLink className="w-3 h-3" />
@@ -163,7 +163,7 @@ export default function UploadHistoryPage() {
                           href={`https://sepolia.etherscan.io/tx/${file.txHash}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                          className="text-brand hover:opacity-80 flex items-center gap-1 transition-all"
                         >
                           {file.txHash.slice(0, 10)}...{file.txHash.slice(-8)}
                           <ExternalLink className="w-3 h-3" />
@@ -178,7 +178,7 @@ export default function UploadHistoryPage() {
                   {file.analysisJson ? (
                     <button
                       onClick={() => handleViewReport(file)}
-                      className="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors"
+                      className="px-6 py-2 rounded-xl bg-brand hover:bg-brand/80 text-black font-medium transition-colors"
                     >
                       View Report
                     </button>

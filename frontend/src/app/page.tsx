@@ -32,18 +32,18 @@ export default function LandingPage() {
             color={[204 / 255, 153 / 255, 253 / 255]} // #cc99fd
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#cc99fd]/10 to-transparent pointer-events-none z-0" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#cc99fd]/10 blur-[120px] rounded-full pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-gradient-to-b from-brand/10 to-transparent pointer-events-none z-0" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand/10 blur-[120px] rounded-full pointer-events-none z-0" />
 
         <div className="container mx-auto px-6 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#cc99fd]/10 text-[#cc99fd] border border-[#cc99fd]/20 mb-8 mt-12">
-            <span className="flex h-2 w-2 rounded-full bg-[#cc99fd] animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 text-brand border border-brand/20 mb-8 mt-12">
+            <span className="flex h-2 w-2 rounded-full bg-brand animate-pulse" />
             Decentralized Genomic Intelligence
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8">
             Own Your DNA. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#cc99fd] to-purple-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-purple-400">
               Predict Your Future.
             </span>
           </h1>
@@ -57,7 +57,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
-              className="px-8 py-4 bg-[#cc99fd] hover:bg-[#e0b0ed] text-black rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,153,253,0.3)] hover:shadow-[0_0_30px_rgba(204,153,253,0.5)]"
+              className="px-8 py-4 bg-brand hover:bg-brand/80 text-black rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,153,253,0.3)] hover:shadow-[0_0_30px_rgba(204,153,253,0.5)]"
             >
               Get Started <ArrowRight className="w-4 h-4" />
             </Link>
@@ -84,9 +84,9 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#cc99fd]/10 group">
-              <div className="w-12 h-12 bg-[#cc99fd]/10 rounded-xl flex items-center justify-center mb-6 border border-[#cc99fd]/20 group-hover:scale-110 transition-transform">
-                <Shield className="w-6 h-6 text-[#cc99fd]" />
+            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand/10 group">
+              <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center mb-6 border border-brand/20 group-hover:scale-110 transition-transform">
+                <Shield className="w-6 h-6 text-brand" />
               </div>
               <h3 className="text-xl font-bold mb-3">
                 Military-Grade Encryption
@@ -97,9 +97,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#cc99fd]/10 group">
-              <div className="w-12 h-12 bg-[#cc99fd]/10 rounded-xl flex items-center justify-center mb-6 border border-[#cc99fd]/20 group-hover:scale-110 transition-transform">
-                <Activity className="w-6 h-6 text-[#cc99fd]" />
+            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand/10 group">
+              <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center mb-6 border border-brand/20 group-hover:scale-110 transition-transform">
+                <Activity className="w-6 h-6 text-brand" />
               </div>
               <h3 className="text-xl font-bold mb-3">AI Risk Intelligence</h3>
               <p className="text-gray-400 leading-relaxed">
@@ -109,9 +109,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#cc99fd]/10 group">
-              <div className="w-12 h-12 bg-[#cc99fd]/10 rounded-xl flex items-center justify-center mb-6 border border-[#cc99fd]/20 group-hover:scale-110 transition-transform">
-                <Database className="w-6 h-6 text-[#cc99fd]" />
+            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand/10 group">
+              <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center mb-6 border border-brand/20 group-hover:scale-110 transition-transform">
+                <Database className="w-6 h-6 text-brand" />
               </div>
               <h3 className="text-xl font-bold mb-3">Decentralized Storage</h3>
               <p className="text-gray-400 leading-relaxed">
@@ -135,7 +135,7 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
-              <div className="w-14 h-14 bg-[#cc99fd]/10 text-[#cc99fd] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#cc99fd]/20 text-xl font-bold">
+              <div className="w-14 h-14 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand/20 text-xl font-bold">
                 1
               </div>
               <h3 className="font-bold mb-2">Sign Up</h3>
@@ -145,7 +145,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 bg-[#cc99fd]/10 text-[#cc99fd] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#cc99fd]/20 text-xl font-bold">
+              <div className="w-14 h-14 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand/20 text-xl font-bold">
                 2
               </div>
               <h3 className="font-bold mb-2">Upload VCF</h3>
@@ -155,7 +155,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 bg-[#cc99fd]/10 text-[#cc99fd] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#cc99fd]/20 text-xl font-bold">
+              <div className="w-14 h-14 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand/20 text-xl font-bold">
                 3
               </div>
               <h3 className="font-bold mb-2">Get Your Report</h3>
