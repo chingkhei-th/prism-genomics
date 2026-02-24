@@ -2,28 +2,31 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Upload, Activity, ShieldCheck, Clock, Database } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Upload,
+  Activity,
+  ShieldCheck,
+  Clock,
+  Database,
+  Loader2,
+} from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
+import { patientActivity, ActivityItem } from "@/lib/api";
 
 export default function PatientDashboard() {
   const { user } = useAuth();
+  const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // In a real app, this would be fetched from the backend
-  const recentActivities = [
-    {
-      id: 1,
-      action: "VCF Data Uploaded",
-      date: "2 Hours ago",
-      status: "Encrypted",
-    },
-    {
-      id: 2,
-      action: "Risk Analysis Completed",
-      date: "1 Hour ago",
-      status: "View Results",
-    },
-  ];
+  useEffect(() => {
+    if (user) {
+      patientActivity()
+        .then((data) => setRecentActivities(data.activities))
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    }
+  }, [user]);
 
   if (!user) {
     return null; // Redirecting...
@@ -85,17 +88,6 @@ export default function PatientDashboard() {
             Approve or revoke doctor permissions.
           </p>
         </Link>
-
-        <Link
-          href="/audit"
-          className="p-6 rounded-2xl bg-gray-900/40 border border-gray-800 hover:bg-gray-800/60 hover:border-gray-600 transition-all group"
-        >
-          <div className="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Clock className="w-6 h-6 text-gray-400" />
-          </div>
-          <h3 className="font-semibold text-lg mb-1">Audit Trail</h3>
-          <p className="text-sm text-gray-400">View on-chain access logs.</p>
-        </Link>
       </div>
 
       <div className="p-8 rounded-2xl bg-gray-900/30 border border-gray-800">
@@ -103,22 +95,46 @@ export default function PatientDashboard() {
           <Clock className="w-5 h-5 text-blue-400" /> Recent Activity
         </h2>
 
-        <div className="space-y-4">
-          {recentActivities.map((activity) => (
-            <div
-              key={activity.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-gray-900/50 border border-gray-800/50"
-            >
-              <div className="mb-2 sm:mb-0">
-                <p className="font-medium text-gray-200">{activity.action}</p>
-                <p className="text-sm text-gray-500">{activity.date}</p>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8 text-gray-500 gap-2">
+            <Loader2 className="w-5 h-5 animate-spin" /> Loading Activity...
+          </div>
+        ) : recentActivities.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No recent activity found. Upload some genomic data to get started!
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-gray-900/50 border border-gray-800/50"
+              >
+                <div className="mb-2 sm:mb-0">
+                  <p className="font-medium text-gray-200">{activity.action}</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(activity.date).toLocaleDateString()}{" "}
+                    {new Date(activity.date).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+                <div
+                  className={`text-sm font-medium px-3 py-1 rounded-full border ${
+                    activity.status === "Approved"
+                      ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                      : activity.status === "Revoked"
+                        ? "text-red-400 bg-red-500/10 border-red-500/20"
+                        : "text-blue-400 bg-blue-500/10 border-blue-500/20"
+                  }`}
+                >
+                  {activity.status}
+                </div>
               </div>
-              <div className="text-blue-400 text-sm font-medium px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">
-                {activity.status}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

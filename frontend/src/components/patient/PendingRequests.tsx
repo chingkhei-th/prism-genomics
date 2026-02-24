@@ -4,28 +4,41 @@ import { ShieldCheck, XCircle, Loader2 } from "lucide-react";
 import { patientPermissions, patientApprove, PermissionEntry } from "@/lib/api";
 import { toast } from "sonner";
 
-export function PendingRequests() {
+export function PendingRequests({
+  refreshKey,
+  onAction,
+}: {
+  refreshKey?: number;
+  onAction?: () => void;
+}) {
   const [pending, setPending] = useState<PermissionEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
     patientPermissions()
       .then((data) => setPending(data.pending))
       .catch((err) => {
         toast.error("Failed to load pending requests");
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   const handleApprove = async (doc: PermissionEntry) => {
     setActionLoading(doc.email);
+    const loadingToastId = toast.loading(
+      "Approving access and registering on blockchain. This may take ~15-30s...",
+    );
     try {
       await patientApprove(doc.email);
       setPending((prev) => prev.filter((d) => d.email !== doc.email));
-      toast.success(`Approved access for ${doc.name}`);
+      if (onAction) onAction();
+      toast.success(`Approved access for ${doc.name}`, { id: loadingToastId });
     } catch (err: any) {
-      toast.error(err.message || "Failed to approve access");
+      toast.error(err.message || "Failed to approve access", {
+        id: loadingToastId,
+      });
     } finally {
       setActionLoading(null);
     }

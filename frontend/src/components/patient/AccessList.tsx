@@ -4,28 +4,41 @@ import { ShieldMinus, Loader2 } from "lucide-react";
 import { patientPermissions, patientRevoke, PermissionEntry } from "@/lib/api";
 import { toast } from "sonner";
 
-export function AccessList() {
+export function AccessList({
+  refreshKey,
+  onAction,
+}: {
+  refreshKey?: number;
+  onAction?: () => void;
+}) {
   const [approved, setApproved] = useState<PermissionEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
     patientPermissions()
       .then((data) => setApproved(data.approved))
       .catch((err) => {
         toast.error("Failed to load permissions");
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   const handleRevoke = async (doc: PermissionEntry) => {
     setActionLoading(doc.email);
+    const loadingToastId = toast.loading(
+      "Revoking access and updating blockchain. This may take ~15-30s...",
+    );
     try {
       await patientRevoke(doc.email);
       setApproved((prev) => prev.filter((d) => d.email !== doc.email));
-      toast.success(`Revoked access for ${doc.name}`);
+      if (onAction) onAction();
+      toast.success(`Revoked access for ${doc.name}`, { id: loadingToastId });
     } catch (err: any) {
-      toast.error(err.message || "Failed to revoke access");
+      toast.error(err.message || "Failed to revoke access", {
+        id: loadingToastId,
+      });
     } finally {
       setActionLoading(null);
     }

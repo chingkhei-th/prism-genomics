@@ -141,6 +141,19 @@ export interface PermissionEntry {
   status: "pending" | "approved";
 }
 
+export interface ActivityItem {
+  id: string;
+  type: "upload" | "permission";
+  action: string;
+  date: string;
+  status: string;
+  timestamp: number;
+}
+
+export async function patientActivity(): Promise<{ activities: ActivityItem[] }> {
+  return apiFetch("/api/v1/patient/activity", { method: "GET" });
+}
+
 export async function patientPermissions() {
   return apiFetch<{
     pending: PermissionEntry[];

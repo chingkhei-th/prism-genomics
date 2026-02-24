@@ -736,3 +736,65 @@ async def revoke_access(
     )
 
     return {"status": "success", "tx_hash": tx_hash_hex}
+
+
+@router.get("/activity")
+async def get_recent_activity(current_user=Depends(get_current_user)):
+    """
+    Returns a unified timeline of recent patient activities:
+    - VCF Uploads (from GenomicFile)
+    - Permission changes (from AccessRequest)
+    """
+    if current_user.role != "patient":
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # 1. Fetch recent uploads
+    files = await db.genomicfile.find_many(
+        where={"userId": current_user.id},
+        order={"createdAt": "desc"},
+        take=5
+    )
+
+    # 2. Fetch recent permission changes (approved/revoked)
+    requests = await db.accessrequest.find_many(
+        where={
+            "patientId": current_user.id,
+            "status": {"in": ["approved", "revoked"]}
+        },
+        include={"doctor": True},
+        order={"updatedAt": "desc"},
+        take=5
+    )
+
+    activities = []
+
+    for f in files:
+        activities.append({
+            "id": f"upload_{f.id}",
+            "type": "upload",
+            "action": "VCF Data Uploaded",
+            "date": f.createdAt.isoformat(),
+            "status": "Encrypted",
+            "timestamp": f.createdAt.timestamp()
+        })
+
+    for r in requests:
+        action_text = f"Access {r.status.capitalize()} - Dr. {r.doctor.name}"
+        status_color = "Approved" if r.status == "approved" else "Revoked"
+        activities.append({
+            "id": f"perm_{r.id}",
+            "type": "permission",
+            "action": action_text,
+            "date": r.updatedAt.isoformat(),
+            "status": status_color,
+            "timestamp": r.updatedAt.timestamp()
+        })
+
+    # Sort combined activities by timestamp descending
+    activities.sort(key=lambda x: x["timestamp"], reverse=True)
+
+    # Format dates nicely (e.g. "2 hours ago" or just the short date)
+    # For now, we'll let the frontend handle relative time formatting if it wants, 
+    # but returning isoformat is standard.
+
+    return {"activities": activities[:5]}

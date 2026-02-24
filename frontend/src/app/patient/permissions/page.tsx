@@ -1,10 +1,13 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ShieldAlert, ShieldCheck } from "lucide-react";
 import { PendingRequests } from "@/components/patient/PendingRequests";
 import { AccessList } from "@/components/patient/AccessList";
 
 export default function PermissionsPage() {
+  const [refreshKey, setRefreshKey] = useState(0);
+  const triggerRefresh = () => setRefreshKey((prev) => prev + 1);
   return (
     <div className="container mx-auto px-6 py-12">
       <Link
@@ -36,7 +39,10 @@ export default function PermissionsPage() {
               <ShieldAlert className="w-5 h-5" />
               <h2 className="text-xl font-bold text-white">Pending Requests</h2>
             </div>
-            <PendingRequests />
+            <PendingRequests
+              refreshKey={refreshKey}
+              onAction={triggerRefresh}
+            />
           </section>
 
           <section className="bg-gray-900/20 border border-gray-800 rounded-2xl p-6">
@@ -46,7 +52,7 @@ export default function PermissionsPage() {
                 Approved Providers
               </h2>
             </div>
-            <AccessList />
+            <AccessList refreshKey={refreshKey} onAction={triggerRefresh} />
           </section>
         </div>
       </div>
