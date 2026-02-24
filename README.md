@@ -22,16 +22,11 @@
 
 ## 2. System Architecture & Diagrams
 
-<details>
-<summary><strong>View Architecture & Workflow Diagrams</strong></summary>
-
 ### System Workflow
 ![PRISM Workflow](Documentation/image1.png)
 
 ### Architecture Visualization
 ![Architecture Visualization](Documentation/image2.png)
-
-</details>
 
 ---
 
