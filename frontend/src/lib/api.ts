@@ -123,6 +123,13 @@ export async function patientRegister() {
 }
 
 export async function patientUpload(file: File) {
+  if (MOCK_AUTH) {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    return {
+      cid: "QmXmock_cid_string123...",
+      tx_hash: "0xMockHash456...",
+    };
+  }
   const formData = new FormData();
   formData.append("file", file);
   return apiFetch<{ cid: string; tx_hash: string }>("/api/v1/patient/upload", {
@@ -222,6 +229,52 @@ export interface RiskReport {
 }
 
 export async function analyzeVCF(file: File): Promise<RiskReport> {
+  if (MOCK_AUTH) {
+    // Simulate AI processing delay
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    return {
+      status: "success",
+      risk_assessment: {
+        prs_raw: 1.45,
+        percentile: 88.2,
+        z_score: 1.25,
+        risk_category: "High",
+      },
+      ml_prediction: {
+        disease_risk_label: "Elevated Risk for Type 2 Diabetes",
+        disease_probability: 0.68,
+      },
+      snp_analysis: {
+        total_gwas_snps: 1542,
+        matched_in_upload: 1510,
+        top_contributing_snps: [
+          {
+            rsid: "rs7903146",
+            position: 114758349,
+            genotype: 2,
+            beta: 0.45,
+            contribution: 0.9,
+            trait: "Type 2 Diabetes",
+          },
+          {
+            rsid: "rs12255372",
+            position: 114754089,
+            genotype: 1,
+            beta: 0.35,
+            contribution: 0.35,
+            trait: "Type 2 Diabetes",
+          },
+        ],
+      },
+      population_reference: {
+        reference_dataset: "1000 Genomes Project (European Cohort)",
+        reference_samples: 2504,
+        population_mean_prs: 0.85,
+        population_std_prs: 0.32,
+      },
+      processing_time_seconds: 2.3,
+    };
+  }
   const formData = new FormData();
   formData.append("file", file);
   return apiFetch("/api/v1/analyze", {
