@@ -57,22 +57,7 @@ interface AuthResponse {
   };
 }
 
-// ⚠️ MOCK MODE — remove when backend is ready
-const MOCK_AUTH = false;
-
 export async function authSignup(data: SignupData): Promise<AuthResponse> {
-  if (MOCK_AUTH) {
-    return {
-      access_token: "mock_jwt_token_" + Date.now(),
-      user: {
-        id: 1,
-        email: data.email,
-        name: data.name,
-        role: data.role,
-        wallet_address: "0x" + "a".repeat(40),
-      },
-    };
-  }
   return apiFetch("/api/v1/auth/signup", {
     method: "POST",
     body: JSON.stringify(data),
@@ -83,20 +68,6 @@ export async function authLogin(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  if (MOCK_AUTH) {
-    // Default to patient role; use "doctor" in email to get doctor role
-    const isDoctor = email.toLowerCase().includes("doctor") || email.toLowerCase().includes("dr");
-    return {
-      access_token: "mock_jwt_token_" + Date.now(),
-      user: {
-        id: 1,
-        email,
-        name: email.split("@")[0],
-        role: isDoctor ? "doctor" : "patient",
-        wallet_address: "0x" + "b".repeat(40),
-      },
-    };
-  }
   return apiFetch("/api/v1/auth/signin", {
     method: "POST",
     body: JSON.stringify({ email, password }),
@@ -104,12 +75,6 @@ export async function authLogin(
 }
 
 export async function authMe(token?: string) {
-  if (MOCK_AUTH && token) {
-    // Return a stored mock user from localStorage
-    const stored = typeof window !== "undefined" ? localStorage.getItem("prism_mock_user") : null;
-    if (stored) return JSON.parse(stored) as AuthResponse["user"];
-    throw new Error("No mock user");
-  }
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -124,13 +89,6 @@ export async function patientRegister() {
 
 /** Full server-side upload pipeline (encrypt + IPFS + on-chain done by backend). */
 export async function patientUpload(file: File) {
-  if (MOCK_AUTH) {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return {
-      cid: "QmXmock_cid_string123...",
-      tx_hash: "0xMockHash456...",
-    };
-  }
   const formData = new FormData();
   formData.append("file", file);
   return apiFetch<{ cid: string; tx_hash: string }>("/api/v1/patient/upload", {
@@ -148,10 +106,6 @@ export async function patientRegisterOnChain(
   blake3Hash: string,
   keyHex: string
 ): Promise<{ status: string; tx_hash: string | null; cid: string }> {
-  if (MOCK_AUTH) {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    return { status: "success", tx_hash: "0xMockTxHash_" + Date.now(), cid };
-  }
   return apiFetch("/api/v1/patient/register-upload", {
     method: "POST",
     body: JSON.stringify({ cid, blake3_hash: blake3Hash, key_hex: keyHex }),
@@ -169,15 +123,10 @@ export interface GenomicFileRecord {
 }
 
 export async function patientGetFiles(): Promise<{ files: GenomicFileRecord[] }> {
-  if (MOCK_AUTH) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return { files: [] };
-  }
   return apiFetch("/api/v1/patient/files", { method: "GET" });
 }
 
 export async function patientSaveAnalysis(cid: string, analysis: RiskReport): Promise<void> {
-  if (MOCK_AUTH) return;
   await apiFetch(`/api/v1/patient/files/${cid}/analysis`, {
     method: "PATCH",
     body: JSON.stringify({ analysis }),
@@ -232,7 +181,7 @@ export interface ApprovedPatient {
 }
 
 export async function doctorPatients() {
-  return apiFetch<ApprovedPatient[]>("/api/v1/doctor/patients");
+  return apiFetch<{ patients: ApprovedPatient[] }>("/api/v1/doctor/patients");
 }
 
 export async function doctorViewData(patientAddress: string) {
@@ -302,55 +251,11 @@ export interface RiskReport {
 }
 
 export async function analyzeVCF(file: File): Promise<RiskReport> {
-  if (MOCK_AUTH) {
-    // Simulate AI processing delay
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-    return {
-      status: "success",
-      risk_assessment: {
-        prs_raw: 1.45,
-        percentile: 88.2,
-        z_score: 1.25,
-        risk_category: "High",
-      },
-      ml_prediction: {
-        disease_risk_label: "Elevated Risk for Type 2 Diabetes",
-        disease_probability: 0.68,
-      },
-      snp_analysis: {
-        total_gwas_snps: 1542,
-        matched_in_upload: 1510,
-        top_contributing_snps: [
-          {
-            rsid: "rs7903146",
-            position: 114758349,
-            genotype: 2,
-            beta: 0.45,
-            contribution: 0.9,
-            trait: "Type 2 Diabetes",
-          },
-          {
-            rsid: "rs12255372",
-            position: 114754089,
-            genotype: 1,
-            beta: 0.35,
-            contribution: 0.35,
-            trait: "Type 2 Diabetes",
-          },
-        ],
-      },
-      population_reference: {
-        reference_dataset: "1000 Genomes Project (European Cohort)",
-        reference_samples: 2504,
-        population_mean_prs: 0.85,
-        population_std_prs: 0.32,
-      },
-      processing_time_seconds: 2.3,
-    };
-  }
   const formData = new FormData();
   formData.append("file", file);
-  return apiFetch("/api/v1/upload", {
+
+  // Calls the actual ML Inference Engine
+  return apiFetch<RiskReport>("/api/v1/upload", {
     method: "POST",
     body: formData,
   });

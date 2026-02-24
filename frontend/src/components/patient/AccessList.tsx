@@ -12,17 +12,8 @@ export function AccessList() {
   useEffect(() => {
     patientPermissions()
       .then((data) => setApproved(data.approved))
-      .catch(() => {
-        // Backend not ready yet — show mock data
-        setApproved([
-          {
-            address: "0x8765...4321",
-            email: "dr.williams@hospital.com",
-            name: "Dr. Bob Williams",
-            date: "Jan 15, 2024",
-            status: "approved",
-          },
-        ]);
+      .catch((err) => {
+        toast.error("Failed to load permissions");
       })
       .finally(() => setLoading(false));
   }, []);
