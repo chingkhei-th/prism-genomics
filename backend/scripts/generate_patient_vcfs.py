@@ -106,26 +106,36 @@ def generate_patient_vcfs(
         fh.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + name + "\n")
         output_files[name] = fh
 
+    from tqdm import tqdm
+
     # Stream through each VCF and extract the chosen samples
     for vcf_path in genome_vcfs:
         logger.info(f"Scanning {vcf_path.name}...")
         opener = gzip.open if str(vcf_path).endswith(".gz") else open
 
         with opener(vcf_path, "rt", errors="replace") as f:
-            for line in f:
+            for line in tqdm(f, desc=f"Extracting", unit=" lines"):
                 if line.startswith("#"):
                     continue
 
-                fields = line.strip().split("\t")
-                if len(fields) < 10:
+                # Fast split: only grab the first 3 columns (CHROM, POS, rest)
+                # Splitting all 2,500 columns for every single line is exactly
+                # what causes the script to take 10+ minutes.
+                parts = line.split("\t", 2)
+                if len(parts) < 3:
                     continue
 
-                pos = int(fields[1])
+                try:
+                    pos = int(parts[1])
+                except ValueError:
+                    continue
 
                 # Only extract positions the model knows about
                 if model_positions and pos not in model_positions:
                     continue
 
+                # If position matches, do the full split to get all genotype columns
+                fields = line.strip().split("\t")
                 chrom = fields[0]
                 rsid = fields[2]
                 ref = fields[3]
