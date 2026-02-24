@@ -122,6 +122,7 @@ export async function patientRegister() {
   return apiFetch("/api/v1/patient/register", { method: "POST" });
 }
 
+/** Full server-side upload pipeline (encrypt + IPFS + on-chain done by backend). */
 export async function patientUpload(file: File) {
   if (MOCK_AUTH) {
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -135,6 +136,51 @@ export async function patientUpload(file: File) {
   return apiFetch<{ cid: string; tx_hash: string }>("/api/v1/patient/upload", {
     method: "POST",
     body: formData,
+  });
+}
+
+/**
+ * Lightweight: frontend already did client-side encrypt + IPFS upload.
+ * Backend only signs the on-chain tx and saves to DB.
+ */
+export async function patientRegisterOnChain(
+  cid: string,
+  blake3Hash: string,
+  keyHex: string
+): Promise<{ status: string; tx_hash: string | null; cid: string }> {
+  if (MOCK_AUTH) {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return { status: "success", tx_hash: "0xMockTxHash_" + Date.now(), cid };
+  }
+  return apiFetch("/api/v1/patient/register-upload", {
+    method: "POST",
+    body: JSON.stringify({ cid, blake3_hash: blake3Hash, key_hex: keyHex }),
+  });
+}
+
+export interface GenomicFileRecord {
+  id: string;
+  ipfsCid: string;
+  blake3Hash: string;
+  txHash: string | null;
+  analysisJson: string | null;
+  createdAt: string;
+  ipfsUrl: string;
+}
+
+export async function patientGetFiles(): Promise<{ files: GenomicFileRecord[] }> {
+  if (MOCK_AUTH) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return { files: [] };
+  }
+  return apiFetch("/api/v1/patient/files", { method: "GET" });
+}
+
+export async function patientSaveAnalysis(cid: string, analysis: RiskReport): Promise<void> {
+  if (MOCK_AUTH) return;
+  await apiFetch(`/api/v1/patient/files/${cid}/analysis`, {
+    method: "PATCH",
+    body: JSON.stringify({ analysis }),
   });
 }
 
@@ -197,17 +243,44 @@ export async function doctorViewData(patientAddress: string) {
 
 export interface RiskReport {
   status: string;
+  // Real backend shape (InferenceEngine.analyze_vcf)
   risk_assessment: {
-    prs_raw: number;
-    percentile: number;
-    z_score: number;
-    risk_category: "Low" | "Moderate" | "High";
+    disease_probability?: number;
+    risk_level?: "Low" | "Moderate" | "High";
+    confidence_note?: string;
+    // Legacy / mock fields kept optional
+    prs_raw?: number;
+    percentile?: number;
+    z_score?: number;
+    risk_category?: "Low" | "Moderate" | "High";
   };
-  ml_prediction: {
+  // Real backend shape
+  variant_analysis?: {
+    total_model_variants: number;
+    matched_in_upload: number;
+    coverage_percent: number;
+    high_impact_variants: Array<{
+      rsid: string;
+      chromosome: string;
+      position: number;
+      genotype: string;
+      clinical_significance: string;
+      disease: string;
+    }>;
+    n_pathogenic_with_alt: number;
+  };
+  model_info?: {
+    architecture: string;
+    n_features: number;
+    chromosomes: string[];
+    n_training_samples: number | string;
+  };
+  // Legacy / mock fields kept optional
+  ml_prediction?: {
     disease_risk_label: string;
     disease_probability: number;
   };
-  snp_analysis: {
+  snp_analysis?: {
     total_gwas_snps: number;
     matched_in_upload: number;
     top_contributing_snps: Array<{
@@ -219,13 +292,13 @@ export interface RiskReport {
       trait: string;
     }>;
   };
-  population_reference: {
+  population_reference?: {
     reference_dataset: string;
     reference_samples: number;
     population_mean_prs: number;
     population_std_prs: number;
   };
-  processing_time_seconds: number;
+  processing_time_seconds?: number;
 }
 
 export async function analyzeVCF(file: File): Promise<RiskReport> {
@@ -277,7 +350,7 @@ export async function analyzeVCF(file: File): Promise<RiskReport> {
   }
   const formData = new FormData();
   formData.append("file", file);
-  return apiFetch("/api/v1/analyze", {
+  return apiFetch("/api/v1/upload", {
     method: "POST",
     body: formData,
   });

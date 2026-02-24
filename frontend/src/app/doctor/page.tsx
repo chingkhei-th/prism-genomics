@@ -1,28 +1,11 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { UserCog, Activity, History } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import { RequestAccessForm } from "@/components/doctor/RequestAccessForm";
 import { ApprovedPatients } from "@/components/doctor/ApprovedPatients";
 
 export default function DoctorDashboard() {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login");
-    }
-  }, [isLoading, user, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center animate-pulse text-gray-400">
-        Loading...
-      </div>
-    );
-  }
+  const { user } = useAuth();
 
   if (!user) {
     return null; // Redirecting...
