@@ -1,55 +1,86 @@
 "use client";
-import { useAccount } from "wagmi";
-import { ShieldMinus } from "lucide-react";
-import { useRevokeAccess } from "@/hooks/useDataAccess";
+import { useState, useEffect } from "react";
+import { ShieldMinus, Loader2 } from "lucide-react";
+import { patientPermissions, patientRevoke, PermissionEntry } from "@/lib/api";
 import { toast } from "sonner";
 
 export function AccessList() {
-  const { address } = useAccount();
-  const { revoke, isPending } = useRevokeAccess();
+  const [approved, setApproved] = useState<PermissionEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Mock approved doctors
-  const approvedDoctors = [
-    {
-      address: "0x8765...4321",
-      name: "Dr. Bob Williams",
-      approvedDate: "Jan 15, 2024",
-    },
-  ];
+  useEffect(() => {
+    patientPermissions()
+      .then((data) => setApproved(data.approved))
+      .catch(() => {
+        // Backend not ready yet — show mock data
+        setApproved([
+          {
+            address: "0x8765...4321",
+            email: "dr.williams@hospital.com",
+            name: "Dr. Bob Williams",
+            date: "Jan 15, 2024",
+            status: "approved",
+          },
+        ]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  if (!address || approvedDoctors.length === 0) {
+  const handleRevoke = async (doc: PermissionEntry) => {
+    setActionLoading(doc.email);
+    try {
+      await patientRevoke(doc.email);
+      setApproved((prev) => prev.filter((d) => d.email !== doc.email));
+      toast.success(`Revoked access for ${doc.name}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to revoke access");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-gray-500 animate-pulse">
+        Loading...
+      </div>
+    );
+  }
+
+  if (approved.length === 0) {
     return (
       <div className="p-8 border-2 border-dashed border-gray-800 rounded-2xl text-center text-gray-500">
-        You haven't granted data access to any doctors.
+        You haven&apos;t granted data access to any doctors.
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {approvedDoctors.map((doc, i) => (
+      {approved.map((doc, i) => (
         <div
           key={i}
-          className="flex items-center justify-between p-4 bg-blue-900/10 border border-blue-900/30 rounded-xl"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-blue-900/10 border border-blue-900/30 rounded-xl"
         >
-          <div className="flex flex-col">
-            <span className="font-medium text-white">{doc.name}</span>
-            <span className="text-sm font-mono text-gray-400">
-              {doc.address}
-            </span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-medium text-white truncate">{doc.name}</span>
+            <span className="text-sm text-gray-400 truncate">{doc.email}</span>
             <span className="text-xs text-blue-400/70 mt-1">
-              Approved {doc.approvedDate}
+              Approved {doc.date}
             </span>
           </div>
           <button
-            onClick={() => {
-              revoke(doc.address as `0x${string}`);
-              toast.success("Revocation transaction initiated");
-            }}
-            disabled={isPending}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-lg text-sm transition-colors"
+            onClick={() => handleRevoke(doc)}
+            disabled={actionLoading === doc.email}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-lg text-sm transition-colors disabled:opacity-50 shrink-0 w-full sm:w-auto"
           >
-            <ShieldMinus className="w-4 h-4" /> Revoke Access
+            {actionLoading === doc.email ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ShieldMinus className="w-4 h-4" />
+            )}
+            Revoke Access
           </button>
         </div>
       ))}

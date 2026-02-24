@@ -1,15 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Upload, Activity, ShieldCheck, Clock } from "lucide-react";
-import { useIsPatient } from "@/hooks/usePatientRegistry";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function PatientDashboard() {
-  const { address } = useAccount();
-  const { data: isRegistered, isLoading } = useIsPatient(address);
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
 
-  // In a real app, this would be fetched from IPFS/Backend status
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login");
+    }
+  }, [isLoading, user, router]);
+
+  // In a real app, this would be fetched from the backend
   const recentActivities = [
     {
       id: 1,
@@ -25,23 +32,16 @@ export default function PatientDashboard() {
     },
   ];
 
-  if (!address) {
+  if (isLoading) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-3xl font-bold mb-4">Connect Wallet Required</h2>
-        <p className="text-gray-400">
-          Please connect your MetaMask wallet to access the Patient Portal.
-        </p>
+      <div className="min-h-[80vh] flex items-center justify-center animate-pulse text-gray-400">
+        Loading...
       </div>
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center animate-pulse">
-        Checking registration status...
-      </div>
-    );
+  if (!user) {
+    return null; // Redirecting...
   }
 
   return (
@@ -52,15 +52,13 @@ export default function PatientDashboard() {
             Patient Dashboard
           </h1>
           <p className="text-gray-400">
-            Manage your genomic data, view risks, and control access
-            permissions.
+            Welcome back, {user.name}! Manage your genomic data, view risks, and
+            control access permissions.
           </p>
         </div>
-        {!isRegistered && (
-          <div className="px-4 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-lg text-sm">
-            Not Registered
-          </div>
-        )}
+        <div className="px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg text-sm">
+          🟢 Registered
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">

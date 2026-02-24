@@ -17,6 +17,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api.inference import InferenceEngine
+from src.api.auth import router as auth_router
+from src.db import connect_db, disconnect_db
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,8 +36,9 @@ MAX_FILE_SIZE_MB = 500
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load model artifacts on startup."""
+    """Load model artifacts and connect to DB on startup."""
     logger.info("Starting PRISM-Genomics API...")
+    await connect_db()
     try:
         engine.load_artifacts()
         logger.info("Inference engine loaded — API ready")
@@ -43,6 +46,7 @@ async def lifespan(app: FastAPI):
         logger.warning(f"Model not found: {e}")
         logger.warning("API will start but inference won't work until model is trained")
     yield
+    await disconnect_db()
     logger.info("Shutting down PRISM-Genomics API")
 
 
@@ -57,10 +61,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Include Authentication Router
+app.include_router(auth_router, prefix="/api/v1")
+
 # Enable CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

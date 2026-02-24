@@ -1,26 +1,22 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, File, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import { encryptFile } from "@/lib/encryption";
-import { computeBlake3Hash } from "@/lib/hashing";
-import { uploadToIPFS } from "@/lib/ipfs";
-import { useUploadData } from "@/hooks/useDataAccess";
+import { Upload, File, CheckCircle2, Loader2 } from "lucide-react";
+import { patientUpload, analyzeVCF, RiskReport } from "@/lib/api";
 import { toast } from "sonner";
 
 export function VCFUploader() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<
-    "idle" | "encrypting" | "uploading" | "onchain" | "success" | "error"
+    "idle" | "uploading" | "analyzing" | "success" | "error"
   >("idle");
-  const [keyHex, setKeyHex] = useState<string | null>(null);
-  const { upload, isPending, isSuccess, txHash } = useUploadData();
+  const [report, setReport] = useState<RiskReport | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles[0]);
       setStatus("idle");
-      setKeyHex(null);
+      setReport(null);
     }
   }, []);
 
@@ -33,36 +29,39 @@ export function VCFUploader() {
     maxFiles: 1,
   });
 
-  useEffect(() => {
-    if (isSuccess && status === "onchain") {
-      setStatus("success");
-      toast.success("Genomic data secured on-chain!");
-    }
-  }, [isSuccess, status]);
-
-  const handleProcess = async () => {
+  const handleUpload = async () => {
     if (!file) return;
     try {
-      setStatus("encrypting");
-      const buffer = await file.arrayBuffer();
-      const encrypted = await encryptFile(buffer);
-      setKeyHex(encrypted.keyHex);
-
-      const hashHex = await computeBlake3Hash(encrypted.encryptedPayload);
-
       setStatus("uploading");
-      const cid = await uploadToIPFS(encrypted.encryptedPayload, file.name);
+      // Backend handles: encrypt → IPFS → on-chain
+      await patientUpload(file);
+      toast.success("Genomic data encrypted and secured on-chain!");
 
-      setStatus("onchain");
-      upload(cid, hashHex);
+      setStatus("analyzing");
+      const result = await analyzeVCF(file);
+      setReport(result);
 
-      toast.success(
-        "File encrypted & uploaded to IPFS. Please confirm the transaction in your wallet.",
-      );
-    } catch (err) {
+      setStatus("success");
+      toast.success("Risk analysis complete!");
+    } catch (err: any) {
       console.error(err);
       setStatus("error");
-      toast.error("An error occurred during processing.");
+      toast.error(err.message || "An error occurred during processing.");
+    }
+  };
+
+  const handleAnalyzeOnly = async () => {
+    if (!file) return;
+    try {
+      setStatus("analyzing");
+      const result = await analyzeVCF(file);
+      setReport(result);
+      setStatus("success");
+      toast.success("Risk analysis complete!");
+    } catch (err: any) {
+      console.error(err);
+      setStatus("error");
+      toast.error(err.message || "Analysis failed.");
     }
   };
 
@@ -103,12 +102,20 @@ export function VCFUploader() {
             </div>
           </div>
           {status === "idle" || status === "error" ? (
-            <button
-              onClick={handleProcess}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-colors"
-            >
-              Encrypt & Upload
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleAnalyzeOnly}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition-colors text-sm"
+              >
+                🔬 Analyze Risk
+              </button>
+              <button
+                onClick={handleUpload}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-colors text-sm"
+              >
+                🔐 Encrypt & Store
+              </button>
+            </div>
           ) : (
             <div className="flex items-center gap-2 text-blue-400">
               {status === "success" ? (
@@ -117,41 +124,55 @@ export function VCFUploader() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               )}
               <span className="text-sm font-medium capitalize">
-                {status === "onchain" ? "Waiting for Transaction..." : status}
+                {status === "uploading"
+                  ? "Encrypting & uploading..."
+                  : status === "analyzing"
+                    ? "Running AI analysis..."
+                    : status}
               </span>
             </div>
           )}
         </div>
       )}
 
-      {keyHex && (
-        <div className="p-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-          <div className="flex items-start gap-4">
-            <AlertCircle className="w-6 h-6 text-yellow-500 shrink-0 mt-1" />
+      {report && (
+        <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+          <h4 className="font-bold text-emerald-400 mb-3">Analysis Results</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <h4 className="font-bold text-yellow-500 mb-2">
-                Save Your Decryption Key
-              </h4>
-              <p className="text-sm text-yellow-500/80 mb-4">
-                This key is never stored on our servers. If you lose it, your
-                genomic data cannot be decrypted by anyone, including you or
-                your doctors.
+              <p className="text-gray-400">Risk Category</p>
+              <p className="text-lg font-bold text-white">
+                {report.risk_assessment.risk_category}
               </p>
-              <div className="flex gap-2 items-center">
-                <code className="flex-1 p-3 bg-black/50 border border-yellow-500/20 rounded break-all text-xs font-mono text-gray-300">
-                  {keyHex}
-                </code>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(keyHex);
-                    toast.success("Key copied to clipboard!");
-                  }}
-                  className="px-4 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500 border border-yellow-500/40 rounded text-sm font-medium transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
             </div>
+            <div>
+              <p className="text-gray-400">Percentile</p>
+              <p className="text-lg font-bold text-white">
+                {report.risk_assessment.percentile.toFixed(1)}%
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400">ML Prediction</p>
+              <p className="text-lg font-bold text-white">
+                {report.ml_prediction.disease_risk_label} (
+                {(report.ml_prediction.disease_probability * 100).toFixed(1)}%)
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400">SNPs Matched</p>
+              <p className="text-lg font-bold text-white">
+                {report.snp_analysis.matched_in_upload} /{" "}
+                {report.snp_analysis.total_gwas_snps}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <a
+              href="/patient/results"
+              className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+            >
+              View Full Report →
+            </a>
           </div>
         </div>
       )}

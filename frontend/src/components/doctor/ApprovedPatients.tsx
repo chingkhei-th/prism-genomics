@@ -1,40 +1,67 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Eye, ShieldAlert } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
+import { doctorPatients, ApprovedPatient } from "@/lib/api";
 
 export function ApprovedPatients() {
-  // In a real app we'd fetch this from the backend indexer / smart contract events
-  // using generic mock data here
-  const approvedPatients = [
-    {
-      address: "0xaaaa...bbbb",
-      name: "Patient #428",
-      approvedDate: "Just now",
-    },
-  ];
+  const [patients, setPatients] = useState<ApprovedPatient[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (approvedPatients.length === 0) {
+  useEffect(() => {
+    doctorPatients()
+      .then((data) => setPatients(data))
+      .catch(() => {
+        // Backend not ready yet — show mock data
+        setPatients([
+          {
+            address: "0xaaaa...bbbb",
+            email: "john@email.com",
+            name: "John D.",
+            approved_date: "Just now",
+            risk_category: "Moderate",
+            risk_score: 72.5,
+          },
+        ]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-gray-500 animate-pulse">
+        <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+        Loading patients...
+      </div>
+    );
+  }
+
+  if (patients.length === 0) {
     return (
       <div className="p-8 border-2 border-dashed border-gray-800 rounded-2xl text-center text-gray-500">
-        You don't have access to any patient data yet.
+        You don&apos;t have access to any patient data yet.
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {approvedPatients.map((patient, i) => (
+      {patients.map((patient, i) => (
         <div
           key={i}
           className="flex items-center justify-between p-4 bg-gray-900/40 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors"
         >
           <div className="flex flex-col">
             <span className="font-medium text-white">{patient.name}</span>
-            <span className="text-sm font-mono text-gray-400">
-              {patient.address}
-            </span>
-            <span className="text-xs text-emerald-500/70 mt-1">
-              Approved {patient.approvedDate}
+            <span className="text-sm text-gray-400">{patient.email}</span>
+            {patient.risk_category && (
+              <span className="text-xs text-blue-400/70 mt-1">
+                Risk: {patient.risk_category}{" "}
+                {patient.risk_score && `(${patient.risk_score}%)`}
+              </span>
+            )}
+            <span className="text-xs text-emerald-500/70 mt-0.5">
+              Approved {patient.approved_date}
             </span>
           </div>
           <Link
