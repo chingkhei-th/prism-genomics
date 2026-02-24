@@ -17,9 +17,8 @@ tests
 
 # Raw training data (large files not needed for inference)
 data/raw
-
-# Processed data & models are volume-mounted at runtime
-data
+data/backup
+data/test_patients
 
 # Node modules (prisma generate runs in builder stage)
 node_modules

@@ -16,9 +16,8 @@ COPY . .
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
-# Next.js bakes NEXT_PUBLIC_* vars at build time — pass via docker-compose build args
-ARG NEXT_PUBLIC_API_URL=http://localhost:8000
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Next.js reads NEXT_PUBLIC_* vars from .env at build time (COPY . . above includes it)
+# Do NOT set them as ENV here — empty ENVs override .env file values
 
 RUN npm run build
 
