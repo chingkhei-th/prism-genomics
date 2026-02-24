@@ -1,14 +1,16 @@
 # PRISM-Genomics Backend
 
-**Polygenic Risk Intelligence for Secure Medicine** — AI-driven disease risk prediction from patient DNA data using PyTorch.
+**Polygenic Risk Intelligence for Secure Medicine** — AI-driven disease risk prediction from patient DNA data using a PyTorch Neural Network.
 
 ## Overview
 
-PRISM-Genomics classifies genetic variants as **Pathogenic** (disease-causing) or **Benign** (harmless) by training a neural network on real human genotype data cross-referenced with clinical annotations.
+PRISM-Genomics classifies genetic variants as **Pathogenic** (disease-causing) or **Benign** (harmless) by training a model on real human genotype data cross-referenced with clinical annotations.
+
+Instead of relying on simple Polygenic Risk Scores (PRS), this system uses a multi-layer neural network to learn complex genetic risk patterns directly from raw VCF data.
 
 ### How It Works
 
-```
+```text
 ┌─────────────┐     ┌──────────────────┐     ┌─────────────┐     ┌──────────────┐
 │  ClinVar DB │────▶│  Feature Extract  │────▶│  PyTorch    │────▶│  FastAPI      │
 │  (Labels)   │     │  (Intersection)   │     │  MLP Model  │     │  /api/v1/    │
@@ -20,195 +22,149 @@ PRISM-Genomics classifies genetic variants as **Pathogenic** (disease-causing) o
 └─────────────┘
 ```
 
-1. **ClinVar VCF** provides clinical significance labels for known genetic variants (Pathogenic vs Benign)
-2. **1000 Genomes VCF** provides actual genotypes (0/0, 0/1, 1/1) from 2,504 human samples
-3. **Feature Extraction** intersects the two datasets — for each ClinVar-labeled variant position, the pipeline extracts the genotype of every sample in 1000 Genomes
-4. **PyTorch MLP** trains on this genotype matrix to learn patterns that distinguish pathogenic from benign genetic profiles
-5. **FastAPI** serves predictions — a patient uploads their VCF and gets a disease risk assessment
+1. **ClinVar Database:** Provides clinical significance labels for known genetic variants (identifying them as Pathogenic or Benign).
+2. **1000 Genomes Genotypes:** Provides real genotype samples (0/0, 0/1, 1/1) from 2,504 human individuals.
+3. **Data Intersection:** The pipeline auto-discovers VCF files for multiple chromosomes, matches ClinVar pathogenic/benign positions against 1000 Genomes samples, encodes genotypes as alt-allele counts (0, 1, 2), and completely handles missing data by imputing population averages.
+4. **PyTorch Model:** A Deep Learning MLP (Multi-Layer Perceptron) trains on this aggregated genotype matrix to predict disease risk based on the accumulation of pathogenic variants (pathogenic burden).
+5. **FastAPI Engine:** At inference time, a patient uploads their VCF. The API maps their variants, handles missing data using the learned population means, queries the model, and returns a detailed risk assessment.
 
-## Tech Stack
+---
 
-| Component | Technology |
-|:---|:---|
-| ML Framework | PyTorch |
-| VCF Parsing | Pure-Python (gzip + line parser) |
-| Web API | FastAPI + Uvicorn |
-| Package Manager | Astral UV |
-| Data Format | `.vcf.gz` (Variant Call Format) |
-| Encryption | blake3, cryptography |
+## 🚀 Quick Start
 
-## Quick Start
-
-### Prerequisites
+### 1. Prerequisites
 
 - Python 3.12+
 - [Astral UV](https://docs.astral.sh/uv/) (`pip install uv`)
-- **Dataset files** in `data/raw/`:
-  - `ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz` (1000 Genomes chr1)
-  - `clinvar.vcf.gz` (ClinVar variant database)
 
-### Setup
+### 2. Setup Environment
+
+Clone the repository, enter the backend directory, and install dependencies automatically using `uv`:
 
 ```bash
-# Clone and navigate to backend
 cd backend
-
-# Create virtual environment and install dependencies
 uv venv
 uv sync
 ```
 
-### Configuration
-
-Copy the example environment file:
+Copy the environment template:
 ```bash
 cp .env.example .env
 ```
+*(By default, `.env` is configured to process chromosomes 1 and 22).*
 
-Key environment variables:
+### 3. Download the Datasets
 
-| Variable | Default | Description |
-|:---|:---|:---|
-| `GENOMES_VCF_PATH` | `data/raw/ALL.chr1...vcf.gz` | Path to 1000 Genomes VCF |
-| `CLINVAR_VCF_PATH` | `data/raw/clinvar.vcf.gz` | Path to ClinVar VCF |
-| `CHROMOSOME` | `1` | Chromosome to process |
-| `BATCH_SIZE` | `64` | Training batch size |
-| `EPOCHS` | `50` | Max training epochs |
-| `LEARNING_RATE` | `0.001` | Adam optimizer LR |
-| `DROPOUT` | `0.3` | Dropout rate |
-| `DEVICE` | `cpu` | PyTorch device (`cpu` or `cuda`) |
+The model requires raw genetic data to train. We use **ClinVar** for labels and **1000 Genomes** for patient features.
 
-### Train the Model
+See [data/raw/README.md](data/raw/README.md) for detailed `wget` download instructions. At minimum, download `clinvar.vcf.gz` and the `ALL.chr1...vcf.gz` / `ALL.chr22...vcf.gz` files into the `data/raw/` directory.
+
+### 4. Train the Model
+
+Once data is downloaded, run the unified training pipeline:
 
 ```bash
 uv run python scripts/train.py
 ```
 
-This runs the full pipeline:
-1. Parses ClinVar for Pathogenic/Benign variants on chr1
-2. Extracts genotypes from 1000 Genomes at those positions
-3. Trains a PyTorch MLP with early stopping
-4. Saves model weights to `data/models/model_weights.pth`
+This script will:
+1. Parse ClinVar and find all Pathogenic/Benign variants on the active chromosomes.
+2. Stream the 1.2+ GB 1000 Genomes files to extract patient genotypes at those exact positions.
+3. Train the PyTorch model using early stopping.
+4. Save the trained weights to `data/models/model_weights.pth` and create `snp_metadata.json` for inference.
 
-> **Note:** The first run processes the 1.2 GB 1000 Genomes file and ~189 MB ClinVar file. This may take several minutes.
+### 5. Generate Test Patient Data
 
-### Run the API
+To test the application properly, you need High-Coverage VCF files. Uploading a regular tiny VCF might result in "Low Confidence" because it misses thousands of SNPs the model looks for.
+
+We have a script that extracts real individual samples from the 1000 Genomes dataset to create realistic test VCFs:
+
+```bash
+# Generate 5 realistic test patients
+uv run python scripts/generate_patient_vcfs.py --count 5
+```
+This produces files like `data/test_patients/patient_HG00096.vcf` which perfectly simulate a full genomic sequencing test.
+
+### 6. Run the API Server
+
+Start the FastAPI application:
 
 ```bash
 uv run python main.py
 ```
 
-The API starts at `http://localhost:8000`. Interactive docs available at `http://localhost:8000/docs`.
+The server will load the trained model into memory and bind to `http://localhost:8000`.
+Interactive Swagger UI docs are available at `http://localhost:8000/docs`.
 
-## API Endpoints
+---
+
+## 🧬 API Endpoints
 
 ### `POST /api/v1/upload`
 
-Upload a patient VCF file for disease risk assessment.
+Upload a patient VCF file (`.vcf` or `.vcf.gz`) to receive a disease risk assessment.
 
-**Request:**
+**Example Request:**
 ```bash
 curl -X POST http://localhost:8000/api/v1/upload \
-  -F "file=@patient.vcf"
+  -F "file=@data/test_patients/patient_HG00096.vcf"
 ```
 
-**Response:**
+**Example Response:**
 ```json
 {
   "status": "success",
   "risk_assessment": {
-    "disease_probability": 0.7234,
+    "disease_probability": 0.8412,
     "risk_level": "High",
     "confidence_note": "High confidence"
   },
   "variant_analysis": {
-    "total_model_variants": 1500,
-    "matched_in_upload": 1200,
-    "coverage_percent": 80.0,
+    "total_model_variants": 4313,
+    "matched_in_upload": 4313,
+    "coverage_percent": 100.0,
     "high_impact_variants": [
       {
-        "rsid": "rs12345",
-        "position": 123456,
-        "genotype": "2/2",
-        "clinical_significance": "Pathogenic",
-        "disease": "Breast cancer"
+        "rsid": "rs371313",
+        "chromosome": "1",
+        "position": 21577499,
+        "genotype": "1/2",
+        "clinical_significance": "Pathogenic/Likely_pathogenic",
+        "disease": "Hypophosphatasia"
       }
     ],
-    "n_pathogenic_with_alt": 15
+    "n_pathogenic_with_alt": 18
   },
   "processing_time_seconds": 0.42
 }
 ```
 
-### `GET /api/v1/health`
+*Note on Missing Data:* If a patient's VCF doesn't contain a specific SNP, the inference engine intelligently imputes the **population mean** for that SNP (learned during training) rather than assuming a `0`. This prevents sparse VCF files from artificially driving the risk probability to zero.
 
-Health check — returns server status and model load state.
+### `GET /api/v1/health`
+Checks if the API is running and the model is successfully loaded into memory.
 
 ### `GET /api/v1/model-info`
+Returns statistics on the active model, the dimensions of the input features, the number of processed chromosomes, and pathogenic/benign variant balance counts.
 
-Returns model metadata: architecture, SNP count, training sample count.
+---
 
-## Project Structure
+## ⚙️ Configuration Reference (`.env`)
 
-```
-backend/
-├── main.py                          # API entry point
-├── pyproject.toml                   # Dependencies (UV)
-├── .env.example                     # Environment config template
-├── scripts/
-│   └── train.py                     # Full training pipeline
-├── src/
-│   ├── config.py                    # Centralized settings
-│   ├── data/
-│   │   ├── feature_extractor.py     # ClinVar × 1000G intersection
-│   │   └── dataset.py              # PyTorch Dataset
-│   ├── model/
-│   │   ├── architecture.py          # GenomicMLP definition
-│   │   └── trainer.py              # Training loop + metrics
-│   └── api/
-│       ├── server.py               # FastAPI endpoints
-│       └── inference.py            # Patient VCF analysis
-├── data/
-│   ├── raw/                        # Input VCF files
-│   ├── processed/                  # Extracted tensors
-│   └── models/                     # Trained weights
-├── docs/
-│   └── roadmap.md                  # Project roadmap
-└── tests/
-```
+| Variable | Default Value | Description |
+|:---|:---|:---|
+| `CHROMOSOMES` | `1,22` | Comma-separated list of chromosomes to train/predict on. |
+| `RAW_DATA_DIR` | `data/raw` | Directory where VCFs are auto-discovered. |
+| `BATCH_SIZE` | `64` | PyTorch DataLoader batch size. |
+| `EPOCHS` | `50` | Maximum number of training epochs (Early Stopping is active). |
+| `LEARNING_RATE`| `0.001` | Adam optimizer learning rate. |
+| `DROPOUT` | `0.3` | Dropout regularization to prevent overfitting on small sample sizes. |
+| `DEVICE` | `cpu` | Target compute device (`cpu` or `cuda`). Automatically moves models/tensors. |
 
-## Datasets
+---
 
-### 1000 Genomes Project (Phase 3)
+## 🔒 Ethics & Compliance
 
-- **File:** `ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz`
-- **Contents:** Genotypes of ~2,504 individuals across chromosome 1
-- **Source:** [1000 Genomes FTP](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/)
-
-### ClinVar
-
-- **File:** `clinvar.vcf.gz`
-- **Contents:** Clinical significance annotations for known genetic variants
-- **Labels used:** `Pathogenic`, `Likely_pathogenic` → **1** (disease-causing); `Benign`, `Likely_benign` → **0** (harmless)
-- **Source:** [NCBI ClinVar FTP](https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/)
-
-## Model Architecture
-
-```
-GenomicMLP:
-    Input(n_snps) → Linear(512) → BatchNorm → ReLU → Dropout(0.3)
-                   → Linear(256) → BatchNorm → ReLU → Dropout(0.3)
-                   → Linear(1)   → Sigmoid
-```
-
-- **Loss:** Binary Cross-Entropy (BCELoss)
-- **Optimizer:** Adam
-- **Regularization:** Dropout + BatchNorm + Early Stopping
-- **Output:** Disease probability (0.0 – 1.0)
-
-## Ethics & Compliance
-
-- **De-identification:** No patient identifiers are stored alongside genomic data
-- **In-memory processing:** Uploaded VCFs are analyzed in-memory and never written to disk
-- **Encryption support:** `blake3` and `cryptography` available for data-at-rest encryption
-- **Research use only:** This tool is for research purposes and should not be used for clinical diagnostic decisions without professional medical review
+- **No Data Retention:** Uploaded VCF files are parsed completely in-memory and are immediately discarded. No patient genomic data is ever written to disk.
+- **De-identification:** The feature extractor operates entirely on variant positions and rsIDs.
+- **Research Use Only:** This implementation is a Hackathon proof-of-concept and a research tool. It must not be used for actual clinical diagnostics.
