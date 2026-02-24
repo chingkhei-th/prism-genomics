@@ -7,9 +7,16 @@ import {
   Loader2,
   BrainCircuit,
   AlertTriangle,
+  Info,
+  Download,
 } from "lucide-react";
 import { analyzeVCF, RiskReport } from "@/lib/api";
 import { toast } from "sonner";
+import {
+  RiskCategory,
+  RiskGauge,
+  CoverageChart,
+} from "@/components/patient/RiskVisualizations";
 
 // ─── Helper: derive display values from either backend shape ─────────────────
 
@@ -54,52 +61,7 @@ function getCoveragePercent(report: RiskReport): number | null {
   return null;
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function RiskBadge({ level }: { level: string }) {
-  const colors: Record<string, string> = {
-    High: "bg-red-500/20 text-red-400 border-red-500/30",
-    Moderate: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    Low: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  };
-  const cls =
-    colors[level] ?? "bg-gray-500/20 text-gray-400 border-gray-500/30";
-  return (
-    <div
-      className={`inline-flex items-center px-4 py-2 rounded-full border text-lg font-bold ${cls}`}
-    >
-      {level} Risk
-    </div>
-  );
-}
-
-function ProbabilityBar({ value }: { value: number }) {
-  const pct = Math.round(value * 100);
-  const color =
-    value > 0.7
-      ? "bg-red-500"
-      : value > 0.4
-        ? "bg-yellow-500"
-        : "bg-emerald-500";
-  return (
-    <div>
-      <div className="flex justify-between text-sm mb-2">
-        <span className="text-gray-400">Disease Probability</span>
-        <span
-          className={`font-bold ${value > 0.7 ? "text-red-400" : value > 0.4 ? "text-yellow-400" : "text-emerald-400"}`}
-        >
-          {pct}%
-        </span>
-      </div>
-      <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-1000 ${color}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
+// ─── Sub-components are now imported from RiskVisualizations.tsx ────────────
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
@@ -135,6 +97,63 @@ export default function ResultsPage() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!report) return;
+
+    const data = {
+      date: new Date().toLocaleDateString(),
+      riskLevel: getRiskLevel(report),
+      confidenceNote: report.risk_assessment?.confidence_note,
+      probability:
+        getDiseaseProb(report) != null
+          ? (getDiseaseProb(report)! * 100).toFixed(1)
+          : "-",
+      coveragePercent:
+        getCoveragePercent(report) != null
+          ? getCoveragePercent(report)!.toFixed(1)
+          : "-",
+      matchedSnps:
+        report.variant_analysis?.matched_in_upload ??
+        report.snp_analysis?.matched_in_upload ??
+        "-",
+      totalSnps:
+        report.variant_analysis?.total_model_variants ??
+        report.snp_analysis?.total_gwas_snps ??
+        "-",
+      hasVariants:
+        (report.variant_analysis?.high_impact_variants?.length ?? 0) > 0,
+      variants: report.variant_analysis?.high_impact_variants?.slice(0, 10),
+      architecture: report.model_info?.architecture,
+      nFeatures: report.model_info?.n_features,
+      nTrainingSamples: report.model_info?.n_training_samples,
+    };
+
+    const toastId = toast.loading("Generating PDF Report...");
+    try {
+      const res = await fetch("/api/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error("Failed to generate PDF");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "PRISM_Risk_Report.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      toast.success("PDF generated successfully!", { id: toastId });
+    } catch (e) {
+      toast.error("Error generating PDF", { id: toastId });
+    }
+  };
+
   return (
     <div className="container mx-auto px-6 py-12">
       <Link
@@ -144,19 +163,30 @@ export default function ResultsPage() {
         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
       </Link>
 
-      <div className="mb-10 flex items-center gap-4">
-        <div className="w-14 h-14 bg-purple-500/10 text-purple-500 rounded-2xl flex items-center justify-center border border-purple-500/20">
-          <BrainCircuit className="w-7 h-7" />
+      <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-purple-500/10 text-purple-500 rounded-2xl flex items-center justify-center border border-purple-500/20 shrink-0">
+            <BrainCircuit className="w-7 h-7" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">
+              AI Risk Intelligence
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Upload your VCF to calculate Polygenic Risk Scores using our
+              genomic ML model.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">
-            AI Risk Intelligence
-          </h1>
-          <p className="text-gray-400 mt-1">
-            Upload your VCF to calculate Polygenic Risk Scores using our genomic
-            ML model.
-          </p>
-        </div>
+
+        {report && (
+          <button
+            onClick={handleDownloadPdf}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors border border-gray-700 shrink-0"
+          >
+            <Download className="w-4 h-4" /> Download PDF
+          </button>
+        )}
       </div>
 
       {!report ? (
@@ -199,7 +229,7 @@ export default function ResultsPage() {
               <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider">
                 Overall Risk Level
               </h3>
-              <RiskBadge level={getRiskLevel(report)} />
+              <RiskCategory category={getRiskLevel(report) as any} />
               {report.risk_assessment?.confidence_note && (
                 <p className="text-xs text-gray-500 text-center">
                   {report.risk_assessment.confidence_note}
@@ -208,51 +238,38 @@ export default function ResultsPage() {
             </div>
 
             {/* Disease Probability */}
-            <div className="p-6 rounded-2xl bg-gray-900/60 border border-gray-800">
-              <h3 className="text-gray-400 font-medium mb-6 text-sm uppercase tracking-wider text-center">
+            <div className="p-6 rounded-2xl bg-gray-900/60 border border-gray-800 flex flex-col items-center justify-center pt-8">
+              <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider text-center w-full mb-2">
                 Disease Probability
               </h3>
               {getDiseaseProb(report) != null ? (
-                <>
-                  <div
-                    className={`text-4xl font-extrabold mb-2 text-center ${
-                      getDiseaseProb(report)! > 0.5
-                        ? "text-red-400"
-                        : "text-emerald-400"
-                    }`}
-                  >
-                    {(getDiseaseProb(report)! * 100).toFixed(1)}%
-                  </div>
-                  <ProbabilityBar value={getDiseaseProb(report)!} />
-                </>
+                <RiskGauge
+                  value={getDiseaseProb(report)! * 100}
+                  label="Probability"
+                />
               ) : (
-                <p className="text-gray-500 text-center">Not available</p>
+                <p className="text-gray-500 text-center w-full">
+                  Not available
+                </p>
               )}
             </div>
 
             {/* SNP Coverage */}
-            <div className="p-6 rounded-2xl bg-gray-900/60 border border-gray-800 flex flex-col items-center justify-center gap-3">
-              <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider">
+            <div className="p-6 rounded-2xl bg-gray-900/60 border border-gray-800 flex flex-col items-center justify-center pt-8">
+              <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider w-full text-center mb-2">
                 SNP Coverage
               </h3>
-              <p className="text-3xl font-extrabold text-white">
-                {getMatchedSnps(report)}
-              </p>
-              {getCoveragePercent(report) != null && (
-                <div className="w-full">
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 rounded-full"
-                      style={{
-                        width: `${Math.min(getCoveragePercent(report)!, 100)}%`,
-                      }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 text-center mt-1">
-                    {getCoveragePercent(report)!.toFixed(1)}% of model variants
-                    matched
+              {getCoveragePercent(report) != null ? (
+                <>
+                  <CoverageChart value={getCoveragePercent(report)!} />
+                  <p className="text-xs text-gray-500 text-center mt-4">
+                    {getMatchedSnps(report)} variants matched
                   </p>
-                </div>
+                </>
+              ) : (
+                <p className="text-gray-500 text-center w-full">
+                  Not available
+                </p>
               )}
             </div>
           </div>
@@ -349,6 +366,46 @@ export default function ResultsPage() {
               </div>
             </div>
           )}
+
+          {/* ── Legend & Terminology ── */}
+          <div className="p-6 rounded-2xl bg-gray-900/40 border border-gray-800 text-sm mt-8 mb-4">
+            <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+              <Info className="w-5 h-5 text-blue-400" />
+              Terminology Guide
+            </h4>
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-gray-400">
+              <div>
+                <strong className="text-gray-200 block mb-1">rsID</strong>{" "}
+                Reference SNP cluster ID; a unique label for a specific
+                variation in DNA.
+              </div>
+              <div>
+                <strong className="text-gray-200 block mb-1">Chr</strong>{" "}
+                Chromosome number where the variant is located.
+              </div>
+              <div>
+                <strong className="text-gray-200 block mb-1">Position</strong>{" "}
+                The exact location (base pair coordinate) on the chromosome.
+              </div>
+              <div>
+                <strong className="text-gray-200 block mb-1">Genotype</strong>{" "}
+                Your specific allele combination (e.g., 0/1 means heterozygous,
+                1/1 means homozygous for the variant).
+              </div>
+              <div>
+                <strong className="text-gray-200 block mb-1">Disease</strong>{" "}
+                The clinical condition or trait associated with this specific
+                variant.
+              </div>
+              <div>
+                <strong className="text-gray-200 block mb-1">
+                  SNP Coverage
+                </strong>{" "}
+                The total number of variants from your uploaded VCF data that
+                successfully matched the AI model's training features.
+              </div>
+            </div>
+          </div>
 
           {/* ── Population reference (mock only) ── */}
           {report.population_reference && (

@@ -13,7 +13,13 @@ import {
 } from "recharts";
 import { AlertTriangle, Info, CheckCircle2 } from "lucide-react";
 
-export function RiskGauge({ value }: { value: number }) {
+export function RiskGauge({
+  value,
+  label = "Percentile",
+}: {
+  value: number;
+  label?: string;
+}) {
   const data = [
     { name: "Risk", value: value },
     { name: "Remaining", value: 100 - value },
@@ -30,8 +36,8 @@ export function RiskGauge({ value }: { value: number }) {
             cy="100%"
             startAngle={180}
             endAngle={0}
-            innerRadius={60}
-            outerRadius={80}
+            innerRadius={90}
+            outerRadius={120}
             dataKey="value"
             stroke="none"
           >
@@ -44,9 +50,9 @@ export function RiskGauge({ value }: { value: number }) {
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center">
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-center">
         <div className="text-3xl font-bold">{value.toFixed(1)}%</div>
-        <div className="text-sm text-gray-400">Percentile</div>
+        <div className="text-sm text-gray-400">{label}</div>
       </div>
     </div>
   );
@@ -162,6 +168,43 @@ export function PopulationChart({
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function CoverageChart({ value }: { value: number }) {
+  const data = [
+    { name: "Covered", value: value },
+    { name: "Missing", value: 100 - value < 0 ? 0 : 100 - value },
+  ];
+  const COLORS = ["#3b82f6", "#1e293b"]; // Blue for coverage, gray for missing
+
+  return (
+    <div className="h-48 w-full relative">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={75}
+            outerRadius={90}
+            dataKey="value"
+            stroke="none"
+          >
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+        <div className="text-3xl font-bold">{value.toFixed(1)}%</div>
+        <div className="text-sm text-gray-400">Coverage</div>
+      </div>
     </div>
   );
 }
