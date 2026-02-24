@@ -1,1 +1,1 @@
-# API layer for genomic risk assessment (future)
+"""PRISM-Genomics — API package."""

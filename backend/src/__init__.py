@@ -1,1 +1,1 @@
-# PRISM-Genomics: Polygenic Risk Intelligence for Secure Medicine
+"""PRISM-Genomics — Pathogenic/Benign variant classification from DNA data."""

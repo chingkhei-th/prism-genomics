@@ -1,271 +1,236 @@
 """
-Inference Engine — loads trained artifacts and processes user VCF uploads.
+Inference Engine — loads trained PyTorch model and processes patient VCFs.
 
-Handles the full inference pipeline:
-  User VCF → Extract GWAS SNPs → Encode genotypes → Compute PRS
-  → Normalize against population → ML prediction → Risk report
+Workflow:
+    1. Load model weights + SNP metadata at startup
+    2. Accept patient VCF bytes → parse genotypes at trained SNP positions
+    3. Pass genotype vector through the model → disease probability
+    4. Return structured risk report with high-impact variants
 """
 
 import gzip
 import json
 import logging
-import tempfile
+from io import BytesIO
 from pathlib import Path
 
-import joblib
 import numpy as np
-import pandas as pd
-from scipy import stats
-from scipy.special import expit
+import torch
 
-from src.config import (
-    GWAS_SNP_FILE,
-    MODEL_METRICS_FILE,
-    POPULATION_STATS_FILE,
-    RISK_MODEL_FILE,
-    SNP_WEIGHTS_FILE,
-)
+from src.config import DEVICE, MODEL_WEIGHTS_PATH, SNP_METADATA_FILE
+from src.model.architecture import GenomicMLP
 
 logger = logging.getLogger(__name__)
 
 
-class RiskInferenceEngine:
-    """
-    Loads pre-computed artifacts and runs PRS inference on new VCF uploads.
-
-    Usage:
-        engine = RiskInferenceEngine()
-        engine.load_artifacts()
-        report = engine.analyze_vcf(vcf_bytes, filename)
-    """
+class InferenceEngine:
+    """Loads a trained GenomicMLP and analyzes patient VCF uploads."""
 
     def __init__(self) -> None:
-        self.population_stats: dict | None = None
-        self.snp_weights: dict | None = None
-        self.model = None
-        self.model_metrics: dict | None = None
+        self.model: GenomicMLP | None = None
+        self.snp_metadata: dict | None = None
+        self.snp_positions: dict[int, dict] = {}  # pos → snp info
+        self.device = torch.device(DEVICE)
         self._loaded = False
 
-    def load_artifacts(self) -> None:
-        """Load all pre-computed model artifacts from disk."""
-        logger.info("Loading inference artifacts...")
+    def load_artifacts(
+        self,
+        weights_path: Path | None = None,
+        metadata_path: Path | None = None,
+    ) -> None:
+        """Load trained model and SNP metadata."""
+        weights_path = weights_path or MODEL_WEIGHTS_PATH
+        metadata_path = metadata_path or SNP_METADATA_FILE
 
-        with open(POPULATION_STATS_FILE) as f:
-            self.population_stats = json.load(f)
+        if not weights_path.exists():
+            raise FileNotFoundError(
+                f"Model weights not found: {weights_path}. Train the model first."
+            )
+        if not metadata_path.exists():
+            raise FileNotFoundError(
+                f"SNP metadata not found: {metadata_path}. Run feature extraction first."
+            )
 
-        with open(SNP_WEIGHTS_FILE) as f:
-            self.snp_weights = json.load(f)
+        # Load metadata
+        with open(metadata_path) as f:
+            self.snp_metadata = json.load(f)
 
-        self.model = joblib.load(RISK_MODEL_FILE)
+        # Build position → snp lookup for fast matching
+        for snp in self.snp_metadata["snps"]:
+            self.snp_positions[snp["pos"]] = snp
 
-        with open(MODEL_METRICS_FILE) as f:
-            self.model_metrics = json.load(f)
+        # Load model
+        checkpoint = torch.load(weights_path, map_location=self.device, weights_only=True)
+        input_size = checkpoint["input_size"]
+        hidden_sizes = tuple(checkpoint.get("hidden_sizes", (512, 256)))
+        dropout = checkpoint.get("dropout", 0.3)
 
-        n_snps = self.snp_weights["snps_used"]
-        logger.info(f"Loaded artifacts: {n_snps} SNPs, model ROC-AUC={self.model_metrics['test_roc_auc']:.3f}")
+        self.model = GenomicMLP(
+            input_size=input_size,
+            hidden_sizes=hidden_sizes,
+            dropout=dropout,
+        )
+        self.model.load_state_dict(checkpoint["model_state_dict"])
+        self.model.to(self.device)
+        self.model.eval()
+
         self._loaded = True
+        logger.info(
+            f"Inference engine loaded: {input_size} features, "
+            f"{len(self.snp_positions)} SNP positions"
+        )
 
-    def _get_snp_position_map(self) -> dict[int, dict]:
-        """Build a position → SNP info lookup from the loaded weights."""
-        pos_map: dict[int, dict] = {}
-        for snp in self.snp_weights["weights"]:
-            pos_map[snp["pos"]] = {
-                "rsid": snp["rsid"],
-                "beta": snp["beta"],
-                "trait": snp["trait"],
-            }
-        return pos_map
-
-    def _parse_vcf_bytes(self, vcf_bytes: bytes, filename: str) -> dict[str, float]:
+    def _parse_patient_vcf(self, vcf_bytes: bytes, filename: str) -> dict[int, int]:
         """
-        Parse a VCF from bytes and extract genotypes at GWAS positions.
-
-        Args:
-            vcf_bytes: Raw bytes of the uploaded VCF file.
-            filename: Original filename (used to detect .gz).
+        Parse a patient VCF and extract genotypes at trained SNP positions.
 
         Returns:
-            Dict mapping rsid → encoded genotype value.
+            Dict mapping position → alt-allele count (0, 1, or 2).
         """
-        snp_positions = self._get_snp_position_map()
-        target_positions = set(snp_positions.keys())
-        genotypes: dict[str, float] = {}
+        genotypes: dict[int, int] = {}
 
-        # Write to temp file so we can handle gzip properly
-        suffix = ".vcf.gz" if filename.endswith(".gz") else ".vcf"
-        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-            tmp.write(vcf_bytes)
-            tmp_path = Path(tmp.name)
+        # Handle gzipped files
+        if filename.endswith(".gz"):
+            text = gzip.decompress(vcf_bytes).decode("utf-8", errors="replace")
+        else:
+            text = vcf_bytes.decode("utf-8", errors="replace")
 
-        try:
-            is_gzipped = filename.endswith(".gz")
-            open_fn = gzip.open if is_gzipped else open
+        for line in text.splitlines():
+            if line.startswith("#"):
+                continue
 
-            sample_idx = 0  # default to first sample if multi-sample
-            total_variants = 0
+            fields = line.strip().split("\t")
+            if len(fields) < 10:
+                continue
 
-            with open_fn(tmp_path, "rt", encoding="utf-8", errors="replace") as f:
-                for line in f:
-                    if line.startswith("##"):
-                        continue
-                    if line.startswith("#CHROM"):
-                        fields = line.strip().split("\t")
-                        n_samples = len(fields) - 9
-                        logger.info(f"User VCF contains {n_samples} sample(s)")
-                        continue
+            pos = int(fields[1])
 
-                    fields = line.strip().split("\t")
-                    if len(fields) < 10:
-                        continue
+            # Only process positions we trained on
+            if pos not in self.snp_positions:
+                continue
 
-                    total_variants += 1
-                    pos = int(fields[1])
+            # Parse genotype from sample column (first sample — patient VCFs
+            # typically have a single sample)
+            gt_field = fields[9]
+            gt = gt_field.split(":")[0]  # take only GT subfield
+            alleles = gt.replace("|", "/").split("/")
 
-                    if pos not in target_positions:
-                        continue
+            if "." in alleles:
+                continue
 
-                    snp_info = snp_positions[pos]
-                    gt_str = fields[9 + sample_idx].split(":")[0].replace("|", "/")
+            try:
+                alt_count = sum(int(a) > 0 for a in alleles)
+                genotypes[pos] = alt_count
+            except ValueError:
+                continue
 
-                    # Encode genotype
-                    if gt_str == "0/0":
-                        gt_val = 0.0
-                    elif gt_str in ("0/1", "1/0"):
-                        gt_val = 1.0
-                    elif gt_str == "1/1":
-                        gt_val = 2.0
-                    else:
-                        gt_val = np.nan
-
-                    genotypes[snp_info["rsid"]] = gt_val
-
-                    target_positions.discard(pos)
-                    if not target_positions:
-                        break
-
-            logger.info(f"Scanned {total_variants:,} user variants, matched {len(genotypes)} SNPs")
-        finally:
-            tmp_path.unlink(missing_ok=True)
+        logger.info(
+            f"Patient VCF: matched {len(genotypes)} / "
+            f"{len(self.snp_positions)} trained positions"
+        )
 
         return genotypes
 
     def analyze_vcf(self, vcf_bytes: bytes, filename: str) -> dict:
         """
-        Full inference pipeline: VCF bytes → risk report.
+        Analyze a patient VCF and return a risk assessment.
 
         Args:
             vcf_bytes: Raw bytes of the uploaded VCF file.
-            filename: Original filename.
+            filename: Original filename (to detect .gz compression).
 
         Returns:
-            Risk report dictionary.
+            Risk assessment dict with probability, risk level, and variant details.
         """
         if not self._loaded:
-            self.load_artifacts()
+            return {"status": "error", "message": "Model not loaded"}
 
-        # Step 1: Parse VCF and extract genotypes
-        genotypes = self._parse_vcf_bytes(vcf_bytes, filename)
+        # Parse patient genotypes
+        genotypes = self._parse_patient_vcf(vcf_bytes, filename)
 
         if not genotypes:
             return {
                 "status": "error",
-                "message": "No matching GWAS SNPs found in uploaded VCF. "
-                           "Ensure the file contains chromosome 1 variants.",
+                "message": "No matching variants found in uploaded VCF",
+                "matched_variants": 0,
+                "total_model_variants": len(self.snp_positions),
             }
 
-        # Step 2: Compute PRS = Σ(β × genotype)
-        snp_details: list[dict] = []
-        prs_raw = 0.0
-        snp_weights_map = {s["rsid"]: s for s in self.snp_weights["weights"]}
+        # Build input tensor in the same column order as training.
+        # Initialize with population mean genotypes so unmatched positions
+        # don't bias the prediction toward zero risk.
+        n_features = self.snp_metadata["n_snps"]
+        input_vector = np.zeros(n_features, dtype=np.float32)
 
-        for rsid, gt_val in genotypes.items():
-            if np.isnan(gt_val):
-                continue
-            snp = snp_weights_map[rsid]
-            contribution = snp["beta"] * gt_val
-            prs_raw += contribution
-            snp_details.append({
-                "rsid": rsid,
-                "position": snp["pos"],
-                "genotype": int(gt_val),
-                "beta": snp["beta"],
-                "contribution": round(contribution, 4),
-                "trait": snp["trait"],
-            })
+        # Pre-fill with population averages from training data
+        for snp in self.snp_metadata["snps"]:
+            idx = snp["index"]
+            input_vector[idx] = snp.get("pop_mean", 0.0)
 
-        # Sort by contribution (descending) to show top contributing SNPs
-        snp_details.sort(key=lambda x: abs(x["contribution"]), reverse=True)
+        matched_count = 0
+        high_impact_variants: list[dict] = []
 
-        # Step 3: Normalize against population
-        mean_prs = self.population_stats["mean_prs"]
-        std_prs = self.population_stats["std_prs"]
-        z_score = (prs_raw - mean_prs) / std_prs
-        percentile = float(stats.norm.cdf(z_score) * 100)
+        for snp in self.snp_metadata["snps"]:
+            idx = snp["index"]
+            pos = snp["pos"]
 
-        # Step 4: Risk category
-        if percentile < 40:
-            risk_category = "Low"
-        elif percentile < 75:
-            risk_category = "Moderate"
+            if pos in genotypes:
+                alt_count = genotypes[pos]
+                input_vector[idx] = alt_count  # override pop_mean with actual
+                matched_count += 1
+
+                # Flag pathogenic variants where patient carries alt alleles
+                if snp["label"] == 1 and alt_count > 0:
+                    high_impact_variants.append({
+                        "rsid": snp["rsid"],
+                        "chromosome": snp.get("chrom", "unknown"),
+                        "position": pos,
+                        "genotype": f"{alt_count}/2",
+                        "clinical_significance": snp["clnsig"],
+                        "disease": snp["disease"],
+                    })
+
+        # Run inference
+        input_tensor = torch.from_numpy(input_vector).unsqueeze(0).to(self.device)
+
+        with torch.no_grad():
+            probability = self.model(input_tensor).item()
+
+        # Determine risk level
+        if probability >= 0.7:
+            risk_level = "High"
+        elif probability >= 0.4:
+            risk_level = "Moderate"
         else:
-            risk_category = "High"
+            risk_level = "Low"
 
-        # Step 5: ML model prediction
-        # Use the model's own feature names to ensure correct alignment
-        model_feature_names = self.model.get_booster().feature_names
-        feature_vector = []
-        for fname in model_feature_names:
-            if fname == "prs_raw":
-                feature_vector.append(prs_raw)
-            else:
-                gt_val = genotypes.get(fname, np.nan)
-                # Impute missing with 0 (reference genotype)
-                feature_vector.append(gt_val if not np.isnan(gt_val) else 0.0)
+        # Sort high-impact variants by genotype (homozygous alt first)
+        high_impact_variants.sort(key=lambda v: v["genotype"], reverse=True)
 
-        features_df = pd.DataFrame([feature_vector], columns=model_feature_names)
-        ml_prediction = int(self.model.predict(features_df)[0])
-        ml_probability = float(self.model.predict_proba(features_df)[0][1])
+        coverage = matched_count / len(self.snp_positions) * 100
 
-        # Build the report
-        report = {
+        return {
             "status": "success",
             "risk_assessment": {
-                "prs_raw": round(prs_raw, 4),
-                "prs_normalized_percent": round(percentile, 1),
-                "z_score": round(z_score, 4),
-                "percentile": round(percentile, 1),
-                "risk_category": risk_category,
+                "disease_probability": round(probability, 4),
+                "risk_level": risk_level,
+                "confidence_note": (
+                    "High confidence" if coverage > 50
+                    else "Low confidence — limited variant coverage"
+                ),
             },
-            "ml_prediction": {
-                "disease_risk_label": "At Risk" if ml_prediction == 1 else "Normal",
-                "disease_probability": round(ml_probability, 4),
-            },
-            "snp_analysis": {
-                "total_gwas_snps": self.snp_weights["snps_used"],
-                "matched_in_upload": len(genotypes),
-                "top_contributing_snps": snp_details[:10],
-            },
-            "population_reference": {
-                "reference_dataset": "1000 Genomes Phase 3 (chr1)",
-                "reference_samples": self.population_stats["n_samples"],
-                "population_mean_prs": round(mean_prs, 4),
-                "population_std_prs": round(std_prs, 4),
+            "variant_analysis": {
+                "total_model_variants": len(self.snp_positions),
+                "matched_in_upload": matched_count,
+                "coverage_percent": round(coverage, 1),
+                "high_impact_variants": high_impact_variants[:20],
+                "n_pathogenic_with_alt": len(high_impact_variants),
             },
             "model_info": {
-                "model_type": "XGBoost Classifier",
-                "model_roc_auc": self.model_metrics.get("test_roc_auc"),
-                "model_accuracy": self.model_metrics.get("test_accuracy"),
+                "architecture": "GenomicMLP",
+                "n_features": n_features,
+                "chromosomes": self.snp_metadata.get("chromosomes", []),
+                "n_training_samples": self.snp_metadata.get("n_samples", "unknown"),
             },
-            "disclaimer": (
-                "This report is for research and educational purposes only. "
-                "It is NOT a medical diagnosis. Genetic counseling is recommended "
-                "before making any health decisions based on these results."
-            ),
         }
 
-        logger.info(
-            f"Analysis complete: PRS={prs_raw:.4f}, percentile={percentile:.1f}%, "
-            f"risk={risk_category}, ML_prob={ml_probability:.3f}"
-        )
-
-        return report
