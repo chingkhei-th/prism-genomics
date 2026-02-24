@@ -19,7 +19,7 @@ data/raw/*.tbi
 data/processed/
 data/models/
 data/backup/
-data/raw/README.md
+!data/raw/README.md
 
 # PyTorch model weights
 *.pth
