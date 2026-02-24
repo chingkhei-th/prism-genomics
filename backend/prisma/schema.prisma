@@ -17,16 +17,18 @@ enum Role {
 }
 
 model User {
-    id                  String        @id @default(uuid())
-    email               String        @unique
+    id                  String          @id @default(uuid())
+    email               String          @unique
     password            String
     name                String
-    role                Role          @default(patient)
+    role                Role            @default(patient)
     walletAddress       String?
     encryptedPrivateKey String?
-    createdAt           DateTime      @default(now())
-    updatedAt           DateTime      @updatedAt
+    createdAt           DateTime        @default(now())
+    updatedAt           DateTime        @updatedAt
     genomicFiles        GenomicFile[]
+    patientRequests     AccessRequest[] @relation("PatientRequests")
+    doctorRequests      AccessRequest[] @relation("DoctorRequests")
 
     @@map("users")
 }
@@ -43,4 +45,20 @@ model GenomicFile {
     user         User     @relation(fields: [userId], references: [id])
 
     @@map("genomic_files")
+}
+
+model AccessRequest {
+    id        String   @id @default(uuid())
+    patientId String
+    doctorId  String
+    status    String // "pending", "approved", "revoked"
+    txHash    String? // On-chain transaction hash for the approval/revocation
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    patient User @relation("PatientRequests", fields: [patientId], references: [id])
+    doctor  User @relation("DoctorRequests", fields: [doctorId], references: [id])
+
+    @@unique([patientId, doctorId])
+    @@map("access_requests")
 }

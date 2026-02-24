@@ -12,17 +12,8 @@ export function PendingRequests() {
   useEffect(() => {
     patientPermissions()
       .then((data) => setPending(data.pending))
-      .catch(() => {
-        // Backend not ready yet — show mock data
-        setPending([
-          {
-            address: "0x1234...5678",
-            email: "dr.smith@hospital.com",
-            name: "Dr. Alice Smith",
-            date: "2 Hours ago",
-            status: "pending",
-          },
-        ]);
+      .catch((err) => {
+        toast.error("Failed to load pending requests");
       })
       .finally(() => setLoading(false));
   }, []);

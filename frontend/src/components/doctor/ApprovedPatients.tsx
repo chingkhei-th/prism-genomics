@@ -10,19 +10,9 @@ export function ApprovedPatients() {
 
   useEffect(() => {
     doctorPatients()
-      .then((data) => setPatients(data))
-      .catch(() => {
-        // Backend not ready yet — show mock data
-        setPatients([
-          {
-            address: "0xaaaa...bbbb",
-            email: "john@email.com",
-            name: "John D.",
-            approved_date: "Just now",
-            risk_category: "Moderate",
-            risk_score: 72.5,
-          },
-        ]);
+      .then((data) => setPatients(data.patients))
+      .catch((error) => {
+        console.error("Failed to fetch patients", error);
       })
       .finally(() => setLoading(false));
   }, []);
