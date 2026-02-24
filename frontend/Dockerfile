@@ -5,6 +5,7 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 RUN npm ci
 
 # Rebuild the source code only when needed
@@ -28,6 +29,10 @@ WORKDIR /app
 ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
+
+# Install Chromium for the /api/pdf API route to generate PDFs
+RUN apk add --no-cache chromium
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium-browser"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
