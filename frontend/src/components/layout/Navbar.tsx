@@ -49,7 +49,7 @@ export function Navbar() {
                     href="/patient"
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                       pathname === "/patient"
-                        ? "bg-white text-black"
+                        ? "bg-brand text-black"
                         : "text-gray-300 hover:text-white hover:bg-white/10"
                     }`}
                   >
@@ -59,7 +59,7 @@ export function Navbar() {
                     href="/patient/upload"
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                       pathname === "/patient/upload"
-                        ? "bg-white text-black"
+                        ? "bg-brand text-black"
                         : "text-gray-300 hover:text-white hover:bg-white/10"
                     }`}
                   >
@@ -69,7 +69,7 @@ export function Navbar() {
                     href="/patient/permissions"
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                       pathname === "/patient/permissions"
-                        ? "bg-white text-black"
+                        ? "bg-brand text-black"
                         : "text-gray-300 hover:text-white hover:bg-white/10"
                     }`}
                   >
@@ -82,7 +82,7 @@ export function Navbar() {
                   href="/doctor"
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                     pathname === "/doctor"
-                      ? "bg-white text-black"
+                      ? "bg-brand text-black"
                       : "text-gray-300 hover:text-white hover:bg-white/10"
                   }`}
                 >
@@ -176,7 +176,7 @@ export function Navbar() {
                 href="/login"
                 className={`px-4 py-1.5 text-sm font-medium transition-all rounded-full ${
                   pathname === "/login"
-                    ? "bg-white text-black"
+                    ? "bg-brand text-black"
                     : "text-gray-300 hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -186,7 +186,7 @@ export function Navbar() {
                 href="/signup"
                 className={`px-4 py-1.5 text-sm font-medium transition-all rounded-full ${
                   pathname === "/signup"
-                    ? "bg-white text-black shadow-lg"
+                    ? "bg-brand text-black shadow-lg"
                     : "text-gray-300 hover:text-white hover:bg-white/5"
                 }`}
               >

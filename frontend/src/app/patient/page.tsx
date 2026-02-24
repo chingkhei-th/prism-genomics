@@ -52,10 +52,10 @@ export default function PatientDashboard() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         <Link
           href="/patient/upload"
-          className="p-6 rounded-2xl bg-blue-900/10 border border-blue-900/30 hover:bg-blue-900/20 hover:border-blue-500/50 transition-all group"
+          className="p-6 rounded-2xl bg-brand/5 border border-brand/20 hover:bg-brand/10 hover:border-brand/40 transition-all group"
         >
-          <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Upload className="w-6 h-6 text-blue-400" />
+          <div className="w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Upload className="w-6 h-6 text-brand" />
           </div>
           <h3 className="font-semibold text-lg mb-1">Upload Data</h3>
           <p className="text-sm text-gray-400">
@@ -65,10 +65,10 @@ export default function PatientDashboard() {
 
         <Link
           href="/patient/files"
-          className="p-6 rounded-2xl bg-cyan-900/10 border border-cyan-900/30 hover:bg-cyan-900/20 hover:border-cyan-500/50 transition-all group"
+          className="p-6 rounded-2xl bg-brand/5 border border-brand/20 hover:bg-brand/10 hover:border-brand/40 transition-all group"
         >
-          <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Database className="w-6 h-6 text-cyan-400" />
+          <div className="w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Database className="w-6 h-6 text-brand" />
           </div>
           <h3 className="font-semibold text-lg mb-1">Data Vault</h3>
           <p className="text-sm text-gray-400">
@@ -78,10 +78,10 @@ export default function PatientDashboard() {
 
         <Link
           href="/patient/permissions"
-          className="p-6 rounded-2xl bg-emerald-900/10 border border-emerald-900/30 hover:bg-emerald-900/20 hover:border-emerald-500/50 transition-all group"
+          className="p-6 rounded-2xl bg-brand/5 border border-brand/20 hover:bg-brand/10 hover:border-brand/40 transition-all group"
         >
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <ShieldCheck className="w-6 h-6 text-emerald-400" />
+          <div className="w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ShieldCheck className="w-6 h-6 text-brand" />
           </div>
           <h3 className="font-semibold text-lg mb-1">Manage Access</h3>
           <p className="text-sm text-gray-400">
@@ -92,7 +92,7 @@ export default function PatientDashboard() {
 
       <div className="p-8 rounded-2xl bg-gray-900/30 border border-gray-800">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-blue-400" /> Recent Activity
+          <Clock className="w-5 h-5 text-brand" /> Recent Activity
         </h2>
 
         {isLoading ? (
@@ -126,7 +126,7 @@ export default function PatientDashboard() {
                       ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
                       : activity.status === "Revoked"
                         ? "text-red-400 bg-red-500/10 border-red-500/20"
-                        : "text-blue-400 bg-blue-500/10 border-blue-500/20"
+                        : "text-brand bg-brand/10 border-brand/20"
                   }`}
                 >
                   {activity.status}

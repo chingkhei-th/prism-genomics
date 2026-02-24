@@ -19,7 +19,7 @@ export default function PermissionsPage() {
 
       <div className="max-w-7xl mx-auto">
         <div className="mb-10 flex items-center gap-4">
-          <div className="w-14 h-14 bg-emerald-500/10 text-emerald-500 rounded-2xl flex items-center justify-center border border-emerald-500/20">
+          <div className="w-14 h-14 bg-brand/10 text-brand rounded-2xl flex items-center justify-center border border-brand/20">
             <ShieldCheck className="w-7 h-7" />
           </div>
           <div>

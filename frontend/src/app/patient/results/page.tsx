@@ -165,7 +165,7 @@ export default function ResultsPage() {
 
       <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-purple-500/10 text-purple-500 rounded-2xl flex items-center justify-center border border-purple-500/20 shrink-0">
+          <div className="w-14 h-14 bg-brand/10 text-brand rounded-2xl flex items-center justify-center border border-brand/20 shrink-0">
             <BrainCircuit className="w-7 h-7" />
           </div>
           <div>
@@ -202,13 +202,13 @@ export default function ResultsPage() {
             type="file"
             accept=".vcf,.vcf.gz,text/vcard,application/gzip"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-500 mb-6 transition-all"
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand file:text-black hover:file:bg-brand/80 mb-6 transition-all"
           />
 
           <button
             onClick={handleProcess}
             disabled={!file || analyzing}
-            className="w-full py-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-xl bg-brand hover:bg-brand/80 text-black font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {analyzing ? (
               <>
@@ -300,7 +300,7 @@ export default function ResultsPage() {
                           key={i}
                           className="hover:bg-gray-800/30 transition-colors"
                         >
-                          <td className="py-3 pr-4 font-mono text-blue-400">
+                          <td className="py-3 pr-4 font-mono text-brand">
                             {v.rsid}
                           </td>
                           <td className="py-3 pr-4 text-gray-300">
@@ -370,7 +370,7 @@ export default function ResultsPage() {
           {/* ── Legend & Terminology ── */}
           <div className="p-6 rounded-2xl bg-gray-900/40 border border-gray-800 text-sm mt-8 mb-4">
             <h4 className="text-white font-medium mb-4 flex items-center gap-2">
-              <Info className="w-5 h-5 text-blue-400" />
+              <Info className="w-5 h-5 text-brand" />
               Terminology Guide
             </h4>
             <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-gray-400">
