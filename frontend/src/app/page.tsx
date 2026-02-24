@@ -4,6 +4,7 @@ import { ArrowRight, Shield, Activity, Database } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Threads from "@/components/ui/Threads";
 
 export default function LandingPage() {
   const { user, isLoading } = useAuth();
@@ -22,19 +23,27 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 to-black pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <section className="relative pt-32 pb-20 overflow-hidden min-h-[600px] flex items-center">
+        <div className="absolute inset-0 z-0">
+          <Threads
+            amplitude={1}
+            distance={0}
+            enableMouseInteraction
+            color={[204 / 255, 153 / 255, 253 / 255]} // #cc99fd
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#cc99fd]/10 to-transparent pointer-events-none z-0" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#cc99fd]/10 blur-[120px] rounded-full pointer-events-none z-0" />
 
         <div className="container mx-auto px-6 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-8 mt-12">
-            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#cc99fd]/10 text-[#cc99fd] border border-[#cc99fd]/20 mb-8 mt-12">
+            <span className="flex h-2 w-2 rounded-full bg-[#cc99fd] animate-pulse" />
             Decentralized Genomic Intelligence
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8">
             Own Your DNA. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#cc99fd] to-purple-400">
               Predict Your Future.
             </span>
           </h1>
@@ -48,7 +57,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
-              className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)]"
+              className="px-8 py-4 bg-[#cc99fd] hover:bg-[#e0b0ed] text-black rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,153,253,0.3)] hover:shadow-[0_0_30px_rgba(204,153,253,0.5)]"
             >
               Get Started <ArrowRight className="w-4 h-4" />
             </Link>
@@ -75,9 +84,9 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 group">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6 border border-blue-500/20 group-hover:scale-110 transition-transform">
-                <Shield className="w-6 h-6 text-blue-400" />
+            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#cc99fd]/10 group">
+              <div className="w-12 h-12 bg-[#cc99fd]/10 rounded-xl flex items-center justify-center mb-6 border border-[#cc99fd]/20 group-hover:scale-110 transition-transform">
+                <Shield className="w-6 h-6 text-[#cc99fd]" />
               </div>
               <h3 className="text-xl font-bold mb-3">
                 Military-Grade Encryption
@@ -88,9 +97,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 group">
-              <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6 border border-purple-500/20 group-hover:scale-110 transition-transform">
-                <Activity className="w-6 h-6 text-purple-400" />
+            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#cc99fd]/10 group">
+              <div className="w-12 h-12 bg-[#cc99fd]/10 rounded-xl flex items-center justify-center mb-6 border border-[#cc99fd]/20 group-hover:scale-110 transition-transform">
+                <Activity className="w-6 h-6 text-[#cc99fd]" />
               </div>
               <h3 className="text-xl font-bold mb-3">AI Risk Intelligence</h3>
               <p className="text-gray-400 leading-relaxed">
@@ -100,9 +109,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/10 group">
-              <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6 border border-emerald-500/20 group-hover:scale-110 transition-transform">
-                <Database className="w-6 h-6 text-emerald-400" />
+            <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#cc99fd]/10 group">
+              <div className="w-12 h-12 bg-[#cc99fd]/10 rounded-xl flex items-center justify-center mb-6 border border-[#cc99fd]/20 group-hover:scale-110 transition-transform">
+                <Database className="w-6 h-6 text-[#cc99fd]" />
               </div>
               <h3 className="text-xl font-bold mb-3">Decentralized Storage</h3>
               <p className="text-gray-400 leading-relaxed">
@@ -126,7 +135,7 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
-              <div className="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20 text-xl font-bold">
+              <div className="w-14 h-14 bg-[#cc99fd]/10 text-[#cc99fd] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#cc99fd]/20 text-xl font-bold">
                 1
               </div>
               <h3 className="font-bold mb-2">Sign Up</h3>
@@ -136,7 +145,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 bg-purple-500/10 text-purple-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-purple-500/20 text-xl font-bold">
+              <div className="w-14 h-14 bg-[#cc99fd]/10 text-[#cc99fd] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#cc99fd]/20 text-xl font-bold">
                 2
               </div>
               <h3 className="font-bold mb-2">Upload VCF</h3>
@@ -146,7 +155,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20 text-xl font-bold">
+              <div className="w-14 h-14 bg-[#cc99fd]/10 text-[#cc99fd] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#cc99fd]/20 text-xl font-bold">
                 3
               </div>
               <h3 className="font-bold mb-2">Get Your Report</h3>

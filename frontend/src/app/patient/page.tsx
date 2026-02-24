@@ -49,7 +49,7 @@ export default function PatientDashboard() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         <Link
           href="/patient/upload"
           className="p-6 rounded-2xl bg-blue-900/10 border border-blue-900/30 hover:bg-blue-900/20 hover:border-blue-500/50 transition-all group"

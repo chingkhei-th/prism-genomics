@@ -51,7 +51,14 @@ export function ApprovedPatients() {
               </span>
             )}
             <span className="text-xs text-emerald-500/70 mt-0.5">
-              Approved {patient.approved_date}
+              Approved{" "}
+              {new Date(patient.approved_date).toLocaleString([], {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           </div>
           <Link

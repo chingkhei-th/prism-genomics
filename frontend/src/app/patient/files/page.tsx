@@ -156,7 +156,7 @@ export default function UploadHistoryPage() {
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </p>
-                    {file.txHash ? (
+                    {file.txHash && (
                       <p className="flex items-center gap-2">
                         <span className="text-gray-500">Tx:</span>
                         <a
@@ -168,10 +168,6 @@ export default function UploadHistoryPage() {
                           {file.txHash.slice(0, 10)}...{file.txHash.slice(-8)}
                           <ExternalLink className="w-3 h-3" />
                         </a>
-                      </p>
-                    ) : (
-                      <p className="text-yellow-500/70 text-xs mt-1">
-                        On-chain registration skipped/failed
                       </p>
                     )}
                   </div>
