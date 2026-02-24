@@ -8,6 +8,7 @@ import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
+from eth_account import Account
 from src.db import db
 from prisma.models import User
 
@@ -43,6 +44,13 @@ def _aes256_decrypt_password(encrypted_b64: str) -> str:
     ciphertext = raw[12:]
     aesgcm = AESGCM(AES_KEY)
     return aesgcm.decrypt(nonce, ciphertext, None).decode()
+
+# --- Wallet Helpers ---
+def generate_custodial_wallet() -> tuple[str, str]:
+    """Generate a new Ethereum account and return (address, encrypted_private_key)."""
+    acct = Account.create()
+    encrypted_pk = _aes256_encrypt_password(acct.key.hex())
+    return acct.address, encrypted_pk
 
 # --- Helper Functions ---
 def verify_password(plain_password: str, stored_value: str) -> bool:
@@ -133,6 +141,9 @@ async def signup(user_data: UserSignup):
     # Hash password
     hashed_password = get_password_hash(user_data.password)
     
+    # Generate custodial wallet
+    wallet_address, encrypted_pk = generate_custodial_wallet()
+    
     # Create user
     try:
         user = await db.user.create(
@@ -141,6 +152,8 @@ async def signup(user_data: UserSignup):
                 "email": user_data.email,
                 "password": hashed_password,
                 "role": user_data.role,
+                "walletAddress": wallet_address,
+                "encryptedPrivateKey": encrypted_pk,
             }
         )
         
