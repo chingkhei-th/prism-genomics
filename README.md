@@ -1,5 +1,5 @@
 <div>
-  <img style="100%" src="https://capsule-render.vercel.app/api?type=venom&height=150&color=7f00be&text=PRISM%20Genomics&textBg=false&fontColor=7f00be&stroke=fbefef&strokeWidth=1"  />
+  <img style="100%" src="https://capsule-render.vercel.app/api?type=venom&height=150&color=cc99fd&text=PRISM%20Genomics&textBg=false&fontColor=cc99fd&stroke=66517f&strokeWidth=2"  />
 </div>
 
 **Polygenic Risk Intelligence for Secure Medicine (PRISM): A Decentralized AI-Powered Genomic Data Ownership & Risk Intelligence Platform**
@@ -204,5 +204,5 @@ The underlying decentralized architecture is optimized for large-scale genomic d
 - [Polygenic Risk Score Knowledge Base (PRSKB)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9438378/)
 ---
 <div>
-  <img style="100%" src="https://capsule-render.vercel.app/api?type=waving&height=80&color=7f00be&textBg=false&fontColor=7f00be&stroke=fbefef&strokeWidth=1&section=footer"  />
+  <img style="100%" src="https://capsule-render.vercel.app/api?type=waving&height=80&color=cc99fd&textBg=false&fontColor=cc99fd&stroke=66517f&strokeWidth=1&section=footer"  />
 </div>
