@@ -162,9 +162,3 @@ Returns statistics on the active model, the dimensions of the input features, th
 | `DEVICE` | `cpu` | Target compute device (`cpu` or `cuda`). Automatically moves models/tensors. |
 
 ---
-
-## 🔒 Ethics & Compliance
-
-- **No Data Retention:** Uploaded VCF files are parsed completely in-memory and are immediately discarded. No patient genomic data is ever written to disk.
-- **De-identification:** The feature extractor operates entirely on variant positions and rsIDs.
-- **Research Use Only:** This implementation is a Hackathon proof-of-concept and a research tool. It must not be used for actual clinical diagnostics.

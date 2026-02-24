@@ -1,243 +1,206 @@
-# Documentation
+# PRISM Genomics
+**Polygenic Risk Intelligence for Secure Medicine (PRISM): A Decentralized AI-Powered Genomic Data Ownership & Risk Intelligence Platform**
 
-**PROJECT TITLE : *PRISM Gemonics*** *: Decentralized AI-Powered Genomic Data Ownership & Risk Intelligence Platform*
+---
 
-**PROJECT OVERVIEW
-Team Name:** Mangzing 
-**Team Members:**
-1. Khumbongmayum Yaiphaba Singh – Blockchain Developer & UI/UX Designer
-2. Chingkheinganba Thoudam – AI/ML Engineer
-3. Thongam Gripson Singh – Backend and Frontend
-Link the Concept Video: [https://youtu.be/a8waELYlxZ0](https://youtu.be/a8waELYlxZ0)
+## 1. Project Overview
 
-**THE PROBLEM LANDSCAPE**
+### 1.1 Team: Mangzing
 
-**Problem Statement:** Genomic data is one of the most sensitive categories of personal data. However, current healthcare systems:
+| Role | Member |
+|:---|:---|
+| **Blockchain Developer & UI/UX Designer** | Khumbongmayum Yaiphaba Singh |
+| **AI/ML Engineer** | Chingkheinganba Thoudam |
+| **Backend & Frontend Developer** | Thongam Gripson Singh |
 
-- Store genetic reports in centralized databases
-- Offer limited patient control over access
-- Are vulnerable to breaches and data tampering
-- Lack transparent audit mechanisms
+**Concept Video:** [View Presentation](https://youtu.be/a8waELYlxZ0)
 
-Patients do not truly “own” their DNA data.
+---
 
-The core pain point:
+## 2. System Architecture & Diagrams
 
-No secure, patient-controlled, tamper-proof system exists for genomic data sharing with AI-driven preventive insights.
+<details>
+<summary><strong>View Architecture & Workflow Diagrams</strong></summary>
 
-**Target Audience**
+### System Workflow
+![PRISM Workflow](Documentation/image1.png)
 
-- Individuals who have undergone genetic testing
-- Hospitals & diagnostic laboratories
-- Precision medicine researchers
-- Healthcare startups
+### Architecture Visualization
+![Architecture Visualization](Documentation/image2.png)
 
-“**Why Now”**
+</details>
 
-- Rise of precision medicine
-- Increased healthcare data breaches globally
-- Growing adoption of consumer genomics
-- Expansion of blockchain-based digital identity systems
+---
 
-Current systems cannot ensure:
+## 3. The Problem Landscape
 
-- Data sovereignty
-- Tamper-proof storage
-- Transparent access control
+Genomic data represents one of the most sensitive categories of personal identifiable information. However, contemporary healthcare systems exhibit significant vulnerabilities:
+- Genetic records are predominantly stored in centralized, siloed databases.
+- Patients are afforded limited sovereignty and control over data access.
+- Centralized repositories represent high-value targets, vulnerable to data breaches and unauthorized tampering.
+- There is a systemic lack of transparent, immutable audit mechanisms for data utilization.
 
-**PROPOSED SOLUTION & USP**
+> **Fundamental Issue: Individuals do not possess true cryptographic ownership of their genomic data.**
 
-**Solution Overview**
+**The Core Problem:**
+Currently, no secure, patient-controlled, tamper-proof infrastructure exists to facilitate genomic data sharing while simultaneously leveraging AI-driven predictive insights for preventive medicine.
 
-***PRISM Gemonics*** is a decentralized genomic intelligence platform where:
+### 3.1 Target Audience
+- Individuals who have undergone genomic sequencing.
+- Hospitals, clinics, and diagnostic laboratories.
+- Precision medicine researchers and academic institutions.
+- Healthcare technology startups.
 
-1. Files are AES-256 encrypted & BLAKE3 hashing ensures integrity
-2. Encrypted files are stored on IPFS & Hash fingerprints are stored on blockchain
-3. AI predicts disease and risk using Polygenic Risk Scores
-4. Doctors request access via smart contracts
-5. Patients approve/reject access
-6. All actions are logged immutably
+### 3.2 Clinical & Technological Context
+- The exponential rise of precision medicine.
+- A marked increase in global healthcare data breaches.
+- The expanding adoption of consumer genomics.
+- The maturation of blockchain networks for secure digital identity and decentralized consensus.
 
-**Unique Selling Proposition (USP)**
+Current systems inherently fail to ensure **Data Sovereignty**, **Tamper-Proof Storage**, and **Transparent Access Control**.
 
-- True patient data ownership
-- Modern cryptographic integrity
-- Zero raw genome stored on-chain
-- AI-powered disease Prediction and Risk
-- Smart contract-based access governance
-- Immutable audit trail
+---
 
-*Unlike traditional EHR systems**, PRISM Gemonics** combines predictive intelligence + decentralized security + patient sovereignty.*
+## 4. Proposed Solution & Unique Value Proposition
 
-**Core Logic**
+### 4.1 Solution Overview
+**PRISM Genomics** proposes a decentralized genomic intelligence architecture wherein:
+1. Genomic data files are encrypted client-side using **AES-256**, and **BLAKE3 hashing** is utilized to ensure unquestionable data integrity.
+2. Encrypted datasets are distributed across the **InterPlanetary File System (IPFS)**, while cryptographic hash fingerprints are committed to an immutable **blockchain** ledger.
+3. A **Deep Learning Artificial Neural Network (MLP)** interfaces with the data to predict disease risk through the evaluation of polygenic risk patterns.
+4. Medical professionals and researchers request data access via automated **smart contracts**.
+5. Patients exercise absolute sovereign control, approving or rejecting access requests cryptographically via their digital wallets.
+6. All access events and state changes are logged **immutably** on the blockchain.
 
-The system integrates:
+### 4.2 Unique Selling Proposition (USP)
+- **True Patient Data Sovereignty:** Absolute cryptographic control over data dissemination.
+- **Advanced Cryptographic Integrity:** Implementation of AES-256 encryption coupled with BLAKE3 cryptographic hashing.
+- **Zero-Knowledge On-Chain Storage:** No raw genomic data is ever stored on the blockchain; only IPFS CIDs and hash fingerprints.
+- **AI-Powered Predictive Diagnostics:** Deep learning inference engine for disease risk stratification.
+- **Smart Contract Governance:** Automated, trustless, and decentralized access control.
+- **Immutable Audit Trails:** A transparent, non-repudiable history of all data interactions.
 
-- AI models for disease risk prediction
-- AES-256 symmetric encryption for file protection & BLAKE3 hashing for fast, tamper-proof integrity & IPFS for decentralized storage
-- Solidity smart contracts for access control
+*In contrast to traditional Electronic Health Record (EHR) systems, PRISM Genomics synthesizes predictive intelligence, decentralized cryptographic security, and absolute patient sovereignty.*
 
-Biological Logic:
+---
 
-- Extract disease-associated SNPs from VCF
-- Encode genotypes (0,1,2)
-- Apply weighted risk scoring
-- Generate probability output
+## 5. Technical Architecture & Stack
 
-**TECHNICAL ARCHITECTURE & STACK**
+### 5.1 Core Logic & Methodology
+1. **Biological & Algorithmic Logic:**
+   - Intersect the ClinVar database (Pathogenic/Benign clinical annotations) with 1000 Genomes project samples.
+   - Extract and encode genotypes computationally (0, 1, 2 alleles) and impute sparse data utilizing population statistical averages.
+   - Train a PyTorch Neural Network (Multilayer Perceptron) on empirical genetic risk distributions.
+   - Output quantified disease risk probabilities and identify high-impact pathogenic variants.
+2. **Security & Storage Logic:**
+   - AES-256 symmetric encryption protocol for robust file protection.
+   - BLAKE3 hashing algorithm for high-throughput, tamper-proof integrity verification.
+   - IPFS protocol for decentralized, fault-tolerant storage.
+3. **Blockchain Logic:**
+   - Solidity smart contracts deployed on Ethereum-compatible networks to handle access control states and audit events.
 
-**System Workflow**
+### 5.2 Technology Stack
+| Layer | Technologies Utilized |
+|:---|:---|
+| **Frontend GUI** | Next.js, MetaMask Web3 Wallet Integration |
+| **Backend Services & APIs** | FastAPI, PostgreSQL |
+| **Artificial Intelligence & Data Engineering**| Python, PyTorch, Deep Learning (MLP), gzip, Pandas, Numpy |
+| **Blockchain Infrastructure** | Solidity, Hardhat, Ethereum-compatible EVM network |
+| **Decentralized Storage & Cryptography** | IPFS, AES-256 Encryption, BLAKE3 Hashing |
 
-![](Documentation/image1.png)
+---
 
-**Tech Stack**
+## 6. Key Features & Functionalities
 
-Frontend : 1. Next.js
+- **Primary Feature:** AI-driven genomic disease risk prediction and stratification.
+- **User Experience (UX):** Web3 wallet-based authentication and a comprehensive patient dashboard featuring risk visualization.
+- **Security Reliability:** AES-256 encrypted storage, BLAKE3 data integrity validation, immutable blockchain audit logs, and temporal, permission-based decryption keys.
 
-2. MetaMask Wallet Integration
+---
 
-Backend / Database: 1. FastAPI
+## 7. Implementation Roadmap
 
-2. PostgreSQL
+### Phase 1: Prototype Development
+- **Focus:** Problem validation, architectural framework design, smart contract drafting, and preliminary AI model prototyping.
+- **Deliverables:** Concept video, technical documentation, and initial backend API prototype.
 
-AI / Specialized Tools: Python, gzip, XGBoost, scipy, scikit-learn, pandas, numpy
+### Phase 2: Full System Integration
+- **Focus:** Comprehensive encryption integration, BLAKE3 and IPFS network deployment, AI model optimization (hyperparameter tuning), and UI/UX refinement.
+- **Deliverables:** A functional end-to-end prototype and a comprehensive demonstration video.
 
-Blockchain: Solidity, Hardhat, Ethereum-compatible network
+---
 
-Storage & Security: IPFS, AES-256 Encryption, BLAKE3 Hashing
+## 8. Blockchain & Decentralized Storage Implementation Protocol
 
-**Architecture Visualization**
+This section details the technical specifications for the decentralized infrastructure of PRISM Genomics.
 
-![](Documentation/image2.png)
-
-**KEY FEATURES & FUNCTIONALITIES**
-
-Feature 1 (Primary): AI-based genomic disease risk prediction.
-
-Feature 2 (UX): 1. Wallet-based authentication
-
-2. Patient dashboard with risk visualization
-
-Feature 3 (Reliability & Security): 1. AES-256 encrypted genomic storage &BLAKE3
-
-2. Immutable blockchain audit logs
-
-3. Temporary permission-based decryption keys
-
-**IMPLEMENTATION ROADMAP**
-
-**Phase 1:**
-
-Focus: 1. Problem validation
-
-2. Architectural design
-
-3. Smart contract drafting
-
-4. AI prototype (basic model)
-
-Deliverables: 1. Concept video
-
-2. Documentation
-
-3. Initial Prototype
-
-**Phase 2:**
-
-Focus: 1. Full encryption integration
-
-2. BLAKE3 hashing implementation & IPFS deployment
-
-3. AI Model Refining & UI/UX refinement
-
-4. Final demo video
-
-Deliverables: 1. Working prototype
-
-2. 2-minute demo video
-
-**Blockchain & Decentralized Storage Implementation Guide**
-
-This section outlines the action plan and technical specification for the decentralized layer of PRISM Genomics.
-
-**1. Smart Contract Architecture (Solidity)**
-- **Location:** `blockchain/`
-- **Objective:** Build an access control system where patients have absolute sovereignty over their genomic data.
+### 8.1 Smart Contract Architecture (Solidity)
+- **Directory:** `blockchain/`
+- **Objective:** Establish a trustless access control paradigm ensuring absolute patient data sovereignty.
 - **Key Contracts:**
-  - `PatientRegistry.sol`: Registers users and maps their wallet address to their identity.
-  - `DataAccess.sol`: Manages permission requests from doctors/researchers. Includes functions like `requestAccess()`, `approveAccess()`, and `revokeAccess()`.
-- **Audit Logging:** Every access request and approval is emitted as an on-chain event, creating an immutable audit trail.
-- **Tools:** Use **Hardhat** for local compilation, testing, and deployment. Leverage **OpenZeppelin** for secure contract standards.
+  - `PatientRegistry.sol`: Registers decentralized identities, mapping Web3 wallet addresses to patient profiles.
+  - `DataAccess.sol`: Governs permission requests from authorized entities (e.g., `requestAccess()`, `approveAccess()`, `revokeAccess()`).
+- **Audit Logging:** Every state change regarding data access is emitted as an on-chain event.
+- **Tooling:** **Hardhat** for local compilation and simulated testing; **OpenZeppelin** libraries for established security standards.
 
-**2. Encryption & Hashing Flow (Python)**
-- **Location:** `encryption/aes256.py`
-- **Objective:** Secure genomic files before they leave the patient's local environment.
-- **Process:**
-  1. Generate a symmetric AES-256 key.
-  2. Encrypt the raw genomic dataset (VCF format) using AES-256.
-  3. Hash the ENCRYPTED file using the **BLAKE3** algorithm to generate a tamper-proof fingerprint.
-  4. The encryption key is securely shared with authorized doctors via the backend.
+### 8.2 Encryption & Hashing Pipeline (Python)
+- **Directory:** `encryption/aes256.py`
+- **Objective:** Cryptographically secure genomic datasets locally before network transmission.
+- **Protocol:**
+  1. Generate a secure symmetric AES-256 cryptographic key.
+  2. Encrypt the raw genomic dataset (VCF format) utilizing AES-256.
+  3. Hash the resulting encrypted payload using the **BLAKE3** algorithm to generate a tamper-proof fingerprint.
+  4. The encryption key is securely transmitted to authorized entities exclusively via the protected backend channel.
 
-**3. IPFS Integration**
-- **Location:** `ipfs/readme.py`
-- **Objective:** Store the encrypted genomic file on a decentralized network to prevent single points of failure.
-- **Process:**
-  1. Use an IPFS pinning service (e.g., Pinata).
-  2. Upload the encrypted file to IPFS.
-  3. Retrieve the Content Identifier (CID).
-  4. Store the IPFS CID + the BLAKE3 hash on the blockchain via the `DataAccess.sol` smart contract.
+### 8.3 IPFS Integration
+- **Directory:** `ipfs/ipfs_upload.py`
+- **Objective:** Persist the encrypted genomic payload across a decentralized peer-to-peer network to eliminate single points of failure.
+- **Protocol:**
+  1. Interface with an IPFS pinning service node (e.g., Pinata).
+  2. Transmit the encrypted payload to the IPFS network and retrieve the resultant Content Identifier (CID).
+  3. Write the IPFS CID and the BLAKE3 hash sequentially to the blockchain ledger via the `DataAccess.sol` contract.
 
-**4. Actionable Steps**
-- **Step 1:** Initialize the Hardhat project in the `blockchain/` directory (`npx hardhat init`) and draft `DataAccess.sol`.
-- **Step 2:** Write the Python encryption and BLAKE3 hashing logic in `encryption/aes256.py`.
-- **Step 3:** Implement the IPFS upload script in `ipfs/readme.py` (consider renaming to `ipfs_upload.py`).
-- **Step 4:** Integrate these scripts with the FastAPI backend and Next.js frontend to complete the workflow.
+---
 
-**IMPACT & SUSTAINABILITY**
+## 9. Impact & Sustainability
 
-Social & Economic Impact
+### 9.1 Socio-Economic Impact
+- **Empowers individuals** by realizing true sovereign ownership of genetic data.
+- **Promotes preventive healthcare** through accessible, AI-derived clinical insights.
+- **Mitigates medical fraud** and unauthorized record tampering.
+- **Facilitates transparent research collaboration** within the biomedical community.
 
-- Empowers individuals with genomic ownership & Promotes preventive healthcare
-- Reduces fraud and tampering & Encourages transparent research collaboration
+### 9.2 System Scalability
+The underlying decentralized architecture is optimized for large-scale genomic data but is highly extensible to:
+- Electronic Health Records (EHR) systems
+- Medical imaging repositories (DICOM)
+- Clinical trial data management
+- Health insurance claim validation
+- Distributed biomedical research datasets
 
-Scalability: The architecture can expand to:
+### 9.3 Risk Assessment & Mitigation
+| Identified Risk | Mitigation Strategy |
+|:---|:---|
+| AI predictive bias resulting from localized or homogenous genomic training datasets. | • Utilize highly diverse, global genomic datasets (e.g., 1000 Genomes Project).<br>• Implement continuous model retraining protocols.<br>• Ensure algorithmic transparency and explainability in risk score generation.<br>• Mandate human-in-the-loop (HITL) clinical review for diagnostic assertions. |
 
-- Electronic Health Records (EHR)
-- Medical imaging storage
-- Clinical trial management
-- Insurance claim validation
-- Biomedical research datasets
+---
 
-Designed for distributed large-scale genomic storage.
+## 10. References & Academic Documentation
 
-**Risk & Mitigation**
+**Genomics, Genetic Databases & AI/ML Technology**
+- [NCBI SNP Database (dbSNP)](https://www.ncbi.nlm.nih.gov/snp/)
+- [ClinVar Clinical Variant Database](https://www.ncbi.nlm.nih.gov/clinvar/)
+- [1000 Genomes Project](https://www.internationalgenome.org/)
+- [PyTorch Deep Learning Framework](https://pytorch.org/)
+- [The Variant Call Format (VCF) Specification](https://academic.oup.com/bioinformatics/article/27/15/2156/402296)
+- [Python Software Foundation](https://www.python.org/)
 
-Major Risk: AI prediction bias due to limited genomic datasets.
+**Blockchain & Cryptography**
+- [Ethereum Solidity Language Documentation](https://docs.soliditylang.org/)
+- [InterPlanetary File System (IPFS) Documentation](https://docs.ipfs.io/)
+- [BLAKE3 Official Cryptographic Specification](https://github.com/BLAKE3/BLAKE3)
 
-Mitigation:
-
-- Use diverse genomic datasets ()
-- Regular model retraining
-- Transparency in risk score explanation
-- Human-in-the-loop clinical review
-
-Genomics & Genetic Databases & AI/ ML Technology Documentation
-
-1. NCBI SNP Database (dbSNP) – [https://www.ncbi.nlm.nih.gov/snp/](https://www.ncbi.nlm.nih.gov/snp/)
-2. GWAS Catalog – [https://www.ebi.ac.uk/gwas/](https://www.ebi.ac.uk/gwas/)
-3. 1000 Genomes Project – [https://www.internationalgenome.org/](https://www.internationalgenome.org/)
-4. XGBoost - [https://arxiv.org/abs/1603.02754](https://arxiv.org/abs/1603.02754)
-5. VCF Processing - https://academic.oup.com/bioinformatics/article/27/15/2156/402296
-6. Python Software Foundation - https://www.python.org/
-
-Blockchain & Cryptography Documentation
-
-1. Ethereum Solidity Documentation – [https://docs.soliditylang.org/](https://docs.soliditylang.org/)
-2. IPFS Documentation – [https://docs.ipfs.io/](https://docs.ipfs.io/)
-3. BLAKE3 Official Specification – https://github.com/BLAKE3/BLAKE3
-
-Research Papers on Polygenic Risk Scores
-
-1. Polygenic Risk Scores: Genomes to Risk Prediction – https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10681370/
-2. Genome-wide association studies, Polygenic Risk Scores and Mendelian Randomisation – https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12013552/
-3. Polygenic Risk Score Knowledge Base (PRSKB) – https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9438378/
+**Academic Literature on Risk Prediction**
+- [Polygenic Risk Scores: Genomes to Risk Prediction](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10681370/)
+- [Genome-wide association studies, Polygenic Risk Scores and Mendelian Randomisation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12013552/)
+- [Polygenic Risk Score Knowledge Base (PRSKB)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9438378/)
