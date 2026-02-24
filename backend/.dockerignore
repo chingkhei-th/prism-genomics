@@ -1,12 +1,34 @@
+# Virtual environment and Python caches
 .venv
 __pycache__
 *.pyc
 *.pyo
 *.pyd
-.db
+
+# Testing and coverage
 .pytest_cache
 .tox
 .coverage
 htmlcov
+tests
+
+# Environment (secrets — injected at runtime via docker-compose)
 .env
+
+# Raw training data (large files not needed for inference)
+data/raw
+
+# Processed data & models are volume-mounted at runtime
 data
+
+# Node modules (prisma generate runs in builder stage)
+node_modules
+package-lock.json
+
+# IDE / OS artifacts
+.git
+.gitignore
+.DS_Store
+docs
+*.md
+!README.md

@@ -1,5 +1,9 @@
-# Use a specialized uv image for faster dependency installation
+# ---- Builder Stage ----
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+
+# Node.js is needed by prisma-client-py to run `prisma generate`
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+    && rm -rf /var/lib/apt/lists/*
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
@@ -12,22 +16,32 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 
-# Final stage
+# Generate Prisma client from schema
+COPY README.md ./
+COPY prisma ./prisma
+RUN uv run prisma generate
+
+
+# ---- Final Stage ----
 FROM python:3.12-slim-bookworm
+
+# Node.js runtime needed by the generated Prisma engine
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy the environment from the builder
+# Copy the virtual environment from the builder
 COPY --from=builder /app/.venv /app/.venv
 
 # Add .venv/bin to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Copy the source code
+# Copy the source code (respects .dockerignore)
 COPY . .
 
 # Expose the port FastAPI runs on
 EXPOSE 8000
 
-# Run the application
+# Run the application with Uvicorn
 CMD ["uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -166,7 +166,7 @@ def main() -> None:
 
     uvicorn.run(
         "src.api.server:app",
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=8000,
         reload=True,
         log_level="info",
