@@ -1,4 +1,7 @@
-# PRISM Genomics
+<div>
+  <img style="100%" src="https://capsule-render.vercel.app/api?type=venom&height=150&color=7f00be&text=PRISM%20Genomics&textBg=false&fontColor=7f00be&stroke=fbefef&strokeWidth=1"  />
+</div>
+
 **Polygenic Risk Intelligence for Secure Medicine (PRISM): A Decentralized AI-Powered Genomic Data Ownership & Risk Intelligence Platform**
 
 ---
@@ -19,16 +22,11 @@
 
 ## 2. System Architecture & Diagrams
 
-<details>
-<summary><strong>View Architecture & Workflow Diagrams</strong></summary>
-
 ### System Workflow
 ![PRISM Workflow](Documentation/image1.png)
 
 ### Architecture Visualization
 ![Architecture Visualization](Documentation/image2.png)
-
-</details>
 
 ---
 
@@ -204,3 +202,7 @@ The underlying decentralized architecture is optimized for large-scale genomic d
 - [Polygenic Risk Scores: Genomes to Risk Prediction](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10681370/)
 - [Genome-wide association studies, Polygenic Risk Scores and Mendelian Randomisation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12013552/)
 - [Polygenic Risk Score Knowledge Base (PRSKB)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9438378/)
+---
+<div>
+  <img style="100%" src="https://capsule-render.vercel.app/api?type=waving&height=80&color=7f00be&textBg=false&fontColor=7f00be&stroke=fbefef&strokeWidth=1&section=footer"  />
+</div>
