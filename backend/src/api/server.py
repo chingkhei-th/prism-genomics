@@ -1,10 +1,10 @@
 """
-PRISM-Genomics API — FastAPI server for genomic risk assessment.
+PRISM-Genomics API — FastAPI server for genomic disease risk prediction.
 
 Endpoints:
-    POST /api/v1/analyze   — Upload VCF, receive risk report
-    GET  /api/v1/health    — Health check
-    GET  /api/v1/model-info — Model and SNP metadata
+    POST /api/v1/upload     — Upload a patient VCF, receive risk assessment
+    GET  /api/v1/health     — Health check
+    GET  /api/v1/model-info — Model metadata and SNP count
 """
 
 import logging
@@ -16,7 +16,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from src.api.inference import RiskInferenceEngine
+from src.api.inference import InferenceEngine
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,18 +26,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Global inference engine (loaded once at startup)
-engine = RiskInferenceEngine()
+# Global inference engine — loaded once at startup
+engine = InferenceEngine()
 
-MAX_FILE_SIZE_MB = 500  # configurable max upload size
+MAX_FILE_SIZE_MB = 500
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load model artifacts on startup."""
     logger.info("Starting PRISM-Genomics API...")
-    engine.load_artifacts()
-    logger.info("API ready — inference engine loaded")
+    try:
+        engine.load_artifacts()
+        logger.info("Inference engine loaded — API ready")
+    except FileNotFoundError as e:
+        logger.warning(f"Model not found: {e}")
+        logger.warning("API will start but inference won't work until model is trained")
     yield
     logger.info("Shutting down PRISM-Genomics API")
 
@@ -45,10 +49,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="PRISM-Genomics API",
     description=(
-        "Polygenic Risk Intelligence for Secure Medicine — "
-        "AI-driven genomic risk assessment using PRS computation and ML prediction."
+        "Pathogenic/Benign variant classification from patient DNA data. "
+        "Upload a VCF file to receive a disease risk assessment based on "
+        "clinically significant genetic variants."
     ),
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -67,48 +72,37 @@ async def health_check():
     """Health check endpoint."""
     return {
         "status": "healthy",
-        "engine_loaded": engine._loaded,
+        "model_loaded": engine._loaded,
         "service": "PRISM-Genomics",
+        "version": "0.2.0",
     }
 
 
 @app.get("/api/v1/model-info")
 async def model_info():
-    """Return model metadata and available SNPs."""
+    """Return model metadata and SNP statistics."""
     if not engine._loaded:
         raise HTTPException(status_code=503, detail="Model not loaded yet")
 
+    meta = engine.snp_metadata
     return {
-        "model_type": "XGBoost Classifier",
-        "n_snps": engine.snp_weights["snps_used"],
-        "snps": [
-            {
-                "rsid": s["rsid"],
-                "chr": s["chr"],
-                "pos": s["pos"],
-                "beta": s["beta"],
-                "trait": s["trait"],
-            }
-            for s in engine.snp_weights["weights"]
-        ],
-        "population_stats": engine.population_stats,
-        "model_metrics": {
-            "test_roc_auc": engine.model_metrics.get("test_roc_auc"),
-            "test_accuracy": engine.model_metrics.get("test_accuracy"),
-            "cv_roc_auc_mean": engine.model_metrics.get("cv_roc_auc_mean"),
-        },
+        "architecture": "GenomicMLP (PyTorch)",
+        "n_snps": meta["n_snps"],
+        "n_pathogenic": meta["n_pathogenic"],
+        "n_benign": meta["n_benign"],
+        "chromosomes": meta.get("chromosomes", [meta.get("chromosome", "unknown")]),
+        "n_training_samples": meta["n_samples"],
     }
 
 
-@app.post("/api/v1/analyze")
-async def analyze_vcf(file: UploadFile = File(...)):
+@app.post("/api/v1/upload")
+async def upload_vcf(file: UploadFile = File(...)):
     """
-    Upload a VCF file and receive a polygenic risk assessment report.
+    Upload a patient VCF file and receive a disease risk assessment.
 
-    Accepts `.vcf` or `.vcf.gz` files. The file is processed in memory —
-    no permanent storage of genomic data.
+    Accepts `.vcf` or `.vcf.gz` files. The file is processed in-memory —
+    no patient genomic data is stored on the server.
     """
-    # Validate file extension
     if not file.filename:
         raise HTTPException(status_code=400, detail="Filename is required")
 
@@ -118,14 +112,20 @@ async def analyze_vcf(file: UploadFile = File(...)):
             detail="Unsupported file format. Please upload a .vcf or .vcf.gz file.",
         )
 
+    if not engine._loaded:
+        raise HTTPException(
+            status_code=503,
+            detail="Model not loaded. Train the model first with: uv run python scripts/train.py",
+        )
+
     # Read file bytes
     start_time = time.time()
     try:
         contents = await file.read()
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to read uploaded file: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to read file: {e}")
 
-    # Check file size
+    # File size check
     file_size_mb = len(contents) / (1024 * 1024)
     if file_size_mb > MAX_FILE_SIZE_MB:
         raise HTTPException(
@@ -133,7 +133,7 @@ async def analyze_vcf(file: UploadFile = File(...)):
             detail=f"File too large ({file_size_mb:.1f} MB). Maximum is {MAX_FILE_SIZE_MB} MB.",
         )
 
-    logger.info(f"Received VCF upload: {file.filename} ({file_size_mb:.1f} MB)")
+    logger.info(f"Received VCF: {file.filename} ({file_size_mb:.1f} MB)")
 
     # Run inference
     try:
@@ -145,7 +145,7 @@ async def analyze_vcf(file: UploadFile = File(...)):
     elapsed = time.time() - start_time
     report["processing_time_seconds"] = round(elapsed, 2)
 
-    logger.info(f"Analysis completed in {elapsed:.2f}s for {file.filename}")
+    logger.info(f"Analysis complete in {elapsed:.2f}s for {file.filename}")
 
     return JSONResponse(content=report)
 
@@ -153,6 +153,7 @@ async def analyze_vcf(file: UploadFile = File(...)):
 def main() -> None:
     """Run the API server."""
     import uvicorn
+
     uvicorn.run(
         "src.api.server:app",
         host="0.0.0.0",
