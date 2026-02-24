@@ -58,7 +58,7 @@ interface AuthResponse {
 }
 
 // ⚠️ MOCK MODE — remove when backend is ready
-const MOCK_AUTH = true;
+const MOCK_AUTH = false;
 
 export async function authSignup(data: SignupData): Promise<AuthResponse> {
   if (MOCK_AUTH) {
@@ -97,7 +97,7 @@ export async function authLogin(
       },
     };
   }
-  return apiFetch("/api/v1/auth/login", {
+  return apiFetch("/api/v1/auth/signin", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
