@@ -117,7 +117,8 @@ Current systems inherently fail to ensure **Data Sovereignty**, **Tamper-Proof S
 For comprehensive technical details, please refer to the localized documentation within each core subsystem:
 - [IPFS & Decentralized Storage Protocol](ipfs/README.md)
 - [Blockchain Infrastructure & Smart Contracts](blockchain/readme.md)
-- [Backend Services & Inference Engine](backend/README.md)
+- [Python AI Engine & Backend Services](backend/README.md)
+- [Next.js Web3 Frontend Dashboard](frontend/README.md)
 
 ---
 
