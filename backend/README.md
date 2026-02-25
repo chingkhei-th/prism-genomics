@@ -30,7 +30,7 @@ Instead of relying on simple Polygenic Risk Scores (PRS), this system uses a mul
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Prerequisites
 
@@ -98,7 +98,7 @@ Interactive Swagger UI docs are available at `http://localhost:8000/docs`.
 
 ---
 
-## 🧬 API Endpoints
+## API Endpoints
 
 ### `POST /api/v1/upload`
 
@@ -149,7 +149,7 @@ Returns statistics on the active model, the dimensions of the input features, th
 
 ---
 
-## ⚙️ Configuration Reference (`.env`)
+## Configuration Reference (`.env`)
 
 | Variable | Default Value | Description |
 |:---|:---|:---|
