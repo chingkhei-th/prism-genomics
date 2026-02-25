@@ -307,6 +307,3 @@ try {
 
 ---
 
-## 📄 License
-
-MIT
