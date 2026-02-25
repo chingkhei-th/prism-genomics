@@ -4,6 +4,12 @@
 
 **Polygenic Risk Intelligence for Secure Medicine (PRISM): A Decentralized AI-Powered Genomic Data Ownership & Risk Intelligence Platform**
 
+
+<p align="center">
+  <a href="http://13.62.224.105:3000/"><strong>Demo website</strong></a>
+</p>
+
+
 ---
 
 ## 1. Project Overview
@@ -105,6 +111,12 @@ Current systems inherently fail to ensure **Data Sovereignty**, **Tamper-Proof S
 | **Artificial Intelligence & Data Engineering**| Python, PyTorch, Deep Learning (MLP), gzip, Pandas, Numpy |
 | **Blockchain Infrastructure** | Solidity, Hardhat, Ethereum-compatible EVM network |
 | **Decentralized Storage & Cryptography** | IPFS, AES-256 Encryption, BLAKE3 Hashing |
+
+### 5.3 Subsystem Specifications & Documentation
+For comprehensive technical details, please refer to the localized documentation within each core subsystem:
+- [IPFS & Decentralized Storage Protocol](ipfs/README.md)
+- [Blockchain Infrastructure & Smart Contracts](blockchain/readme.md)
+- [Backend Services & Inference Engine](backend/README.md)
 
 ---
 
