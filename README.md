@@ -106,11 +106,12 @@ Current systems inherently fail to ensure **Data Sovereignty**, **Tamper-Proof S
 ### 5.2 Technology Stack
 | Layer | Technologies Utilized |
 |:---|:---|
-| **Frontend GUI** | Next.js, MetaMask Web3 Wallet Integration |
-| **Backend Services & APIs** | FastAPI, PostgreSQL |
+| **Frontend GUI** | Next.js, Tailwind CSS, Recharts,Web3 Wallet Integration |
+| **Backend Services & APIs** | FastAPI, Uvicorn, Prisma ORM, Web3.py, Supabase (PostgreSQL - Database Only) |
 | **Artificial Intelligence & Data Engineering**| Python, PyTorch, Deep Learning (MLP), gzip, Pandas, Numpy |
-| **Blockchain Infrastructure** | Solidity, Hardhat, Ethereum-compatible EVM network |
+| **Blockchain Infrastructure** | Solidity, Hardhat, Viem, OpenZeppelin, Ethereum-compatible EVM network |
 | **Decentralized Storage & Cryptography** | IPFS, AES-256 Encryption, BLAKE3 Hashing |
+| **Infrastructure & Deployment** | AWS EC2 (t3.micro), Docker, Docker Compose |
 
 ### 5.3 Subsystem Specifications & Documentation
 For comprehensive technical details, please refer to the localized documentation within each core subsystem:
@@ -124,7 +125,7 @@ For comprehensive technical details, please refer to the localized documentation
 
 - **Primary Feature:** AI-driven genomic disease risk prediction and stratification.
 - **User Experience (UX):** Web3 wallet-based authentication and a comprehensive patient dashboard featuring risk visualization.
-- **Security Reliability:** AES-256 encrypted storage, BLAKE3 data integrity validation, immutable blockchain audit logs, and temporal, permission-based decryption keys.
+- **Security Reliability:** AES-256 encrypted storage, BLAKE3 data integrity validation, immutable blockchain logs, and temporal, permission-based decryption keys.
 
 ---
 
@@ -140,7 +141,13 @@ For comprehensive technical details, please refer to the localized documentation
 
 ---
 
-## 8. Blockchain & Decentralized Storage Implementation Protocol
+## 8. Getting Started / Setup Guide
+
+For detailed instructions on how to install and run the PRISM Genomics platform locally (either via Docker or manually), please refer to our comprehensive **[Setup Guide](SETUP.md)**.
+
+---
+
+## 9. Blockchain & Decentralized Storage Implementation Protocol
 
 This section details the technical specifications for the decentralized infrastructure of PRISM Genomics.
 

@@ -8,7 +8,64 @@ PRISM-Genomics classifies genetic variants as **Pathogenic** (disease-causing) o
 
 Instead of relying on simple Polygenic Risk Scores (PRS), this system uses a multi-layer neural network to learn complex genetic risk patterns directly from raw VCF data.
 
+**Key Technologies Integration:**
+- **FastAPI & Uvicorn**: High-performance API routing and asynchronous serving.
+- **Prisma ORM & Supabase**: Typed database access referencing a scalable Supabase (PostgreSQL) instance.
+- **Web3.py**: Interactions with smart contracts and blockchain identities.
+- **Docker**: Full backend containerization (see root `docker-compose.yml`).
+
+
+
 ### How It Works
+
+**AI Prediction Flowchart:**
+
+```text
+ ┌────────────────────────────────────────────────────────┐
+ │ 1. User Uploads VCF File                               │
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+                            ▼
+ ┌────────────────────────────────────────────────────────┐
+ │ 2. Parsing Engine (Extracts Chromosomes & SNPs)        │
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+                            ▼
+ ┌────────────────────────────────────────────────────────┐◄──────── 📂 snp_metadata.json
+ │ 3. Variant Matcher (Checks against 4000+ known sites)  │          (Learned from Training)
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+               ┌────────────┴────────────┐
+               │                         │
+               ▼                         ▼
+      [Variant Exists]             [Variant Missing]
+ ┌───────────────────────┐   ┌───────────────────────────┐
+ │ Encode Genotypes      │   │ Impute Population Mean    │
+ │ (0, 1, or 2 Alleles)  │   │ (e.g., Use average '0.14')│
+ └─────────────┬─────────┘   └───────────┬───────────────┘
+               │                         │
+               └────────────┬────────────┘
+                            │
+                            ▼
+ ┌────────────────────────────────────────────────────────┐
+ │ 4. Tensor Builder (1D Mathematical Matrix of Features) │
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+                            ▼
+ ┌────────────────────────────────────────────────────────┐
+ │ 5. PyTorch Deep Neural Network (Inference Forward Pass)│
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+               ┌────────────┴────────────┐
+               │                         │
+               ▼                         ▼
+ ┌───────────────────────┐   ┌───────────────────────────┐
+ │ Disease Risk Score    │   │ Explainability Audit      │
+ │ (e.g., 84% Probability│   │ (High-Impact SNPs list)   │
+ └───────────────────────┘   └───────────────────────────┘
+```
+
+**System Architecture:**
 
 ```text
 ┌─────────────┐     ┌──────────────────┐     ┌─────────────┐     ┌──────────────┐
@@ -30,12 +87,25 @@ Instead of relying on simple Polygenic Risk Scores (PRS), this system uses a mul
 
 ---
 
-## Quick Start
+## 🚀 Quick Start (Docker)
+
+The fastest and easiest way to run the backend is by using Docker Compose from the root directory of the project:
+
+```bash
+cd ..
+docker-compose up --build
+```
+*Note: Make sure your `.env` is configured correctly before running.*
+
+---
+
+## 💻 Manual Setup (Local Development)
 
 ### 1. Prerequisites
 
 - Python 3.12+
 - [Astral UV](https://docs.astral.sh/uv/) (`pip install uv`)
+- Node.js (for Prisma)
 
 ### 2. Setup Environment
 
@@ -43,15 +113,19 @@ Clone the repository, enter the backend directory, and install dependencies auto
 
 ```bash
 cd backend
-uv venv
 uv sync
 ```
 
-Copy the environment template:
+Copy the environment template and configure your secrets (especially `DATABASE_URL` for Supabase):
 ```bash
 cp .env.example .env
 ```
 *(By default, `.env` is configured to process chromosomes 1 and 22).*
+
+Generate the Prisma Client:
+```bash
+npx prisma generate
+```
 
 ### 3. Download the Datasets
 
