@@ -20,6 +20,7 @@ data/raw/*.tbi
 !data/models/
 data/backup/
 !data/raw/README.md
+!data/test_patients/*.vcf
 
 # IDE
 .vscode/
