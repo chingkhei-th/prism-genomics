@@ -42,16 +42,16 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8">
-            Own Your DNA. <br />
+            Your Genome. <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-purple-400">
               Predict Your Future.
             </span>
           </h1>
 
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-            PRISM Genomics combines blockchain security with AI-driven Polygenic
-            Risk Scoring to give you full control over your genetic data and
-            health insights.
+            Predict health risks with AI-powered polygenic scoring on a secure,
+            decentralized network. PRISM puts the power of genomic intelligence
+            in your hands, not in a corporate database.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -103,9 +103,9 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold mb-3">AI Risk Intelligence</h3>
               <p className="text-gray-400 leading-relaxed">
-                Our advanced XGBoost model analyzes your SNPs against GWAS
-                databases to calculate Polygenic Risk Scores (PRS) for various
-                complex traits.
+                Our Deep Learning neural network analyzes thousands of genomic
+                variants against the ClinVar database to calculate precise
+                Polygenic Risk Scores (PRS).
               </p>
             </div>
 
